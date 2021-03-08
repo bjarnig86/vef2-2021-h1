@@ -236,3 +236,19 @@ Sett verða fyrir tvö hópverkefni þar sem hvort um sig gildir 10%, samtals 20
 | 0.1    | _Fyrsta útgáfa_, ekki er búið að fullskilgreina vefþjónustuskil eða útbúa gögn í byrjun, stefnt á að verði komið 7.–8. febrúar. Nota skal tíma þangað til, til þess að finna hóp, skipta með sér verkum, ákveða samskipti, og skilgreina tímalínu fyrir vinnu á verkefninu. [Yfirferð í fyrirlestri 4](https://youtu.be/gQEFFKGumG0) |
 | 0.2    | Lýsing á gögnum, lýsing á þjónustum, mat, gögn |
 |--------|--------|
+
+## NTG
+
+Bætti við undirkafla í Readme: "Note To Group" til að halda aðeins utan um nauðsynlegar upplýsingar sem við þurfum að vita og muna. (Halli)
+
+Setja upp umhverfi locally:
+--> `npm install`
+
+Starta postgres server locally (Linux):
+--> `sudo service postgresql start`
+
+Stofna þarf gagnagrunn locally og setja userstreng í .env skrá á rót verkefnis:
+`DATABASE_URL=postgres://<USER>:<PASS>@localhost/<DATABASENAME>`
+
+Setja töflu í gagnagrunn með fake gögnum:
+--> `npm run setup`
