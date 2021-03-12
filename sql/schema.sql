@@ -1,5 +1,13 @@
-
+begin;
+DROP TABLE IF EXISTS shows_genres;
+DROP TABLE IF EXISTS users_shows;
+DROP TABLE IF EXISTS genres;
+DROP TABLE IF EXISTS shows;
+DROP TABLE IF EXISTS seasons;
+DROP TABLE IF EXISTS episodes;
 DROP TABLE IF EXISTS users;
+DROP TYPE IF EXISTS status;
+
 CREATE TABLE users (
   id serial primary key,
   username varchar(32) NOT NULL UNIQUE,
@@ -8,13 +16,13 @@ CREATE TABLE users (
   admin boolean default false
 );
 
-DROP TABLE IF EXISTS categories;
-CREATE TABLE categories (
+
+CREATE TABLE genres (
   id serial primary key,
   title varchar(255) NOT NULL UNIQUE
 );
 
-DROP TABLE IF EXISTS shows;
+
 CREATE TABLE shows (
   id serial primary key,
   title varchar(255) NOT NULL,
@@ -28,7 +36,7 @@ CREATE TABLE shows (
   webpage varchar(255)
 );
 
-DROP TABLE IF EXISTS seasons;
+
 CREATE TABLE seasons (
   id serial primary key,
   title varchar(255) NOT NULL,
@@ -38,7 +46,7 @@ CREATE TABLE seasons (
   poster varchar(255) NOT NULL
 );
 
-DROP TABLE IF EXISTS episodes;
+
 CREATE TABLE episodes (
   id serial primary key,
   title varchar(255) NOT NULL,
@@ -47,16 +55,16 @@ CREATE TABLE episodes (
   description text
 );
 
-DROP TABLE IF EXISTS shows_categories;
-CREATE TABLE shows_categories (
+
+CREATE TABLE shows_genres (
   id SERIAL PRIMARY KEY,
   show INTEGER NOT NULL,
-  category INTEGER NOT NULL,
+  genre INTEGER NOT NULL,
   CONSTRAINT show FOREIGN KEY (show) REFERENCES shows (id),
-  CONSTRAINT category FOREIGN KEY (category) REFERENCES categories (id),
+  CONSTRAINT genre FOREIGN KEY (genre) REFERENCES genres (id)
 );
 
-DROP TABLE IF EXISTS users_shows;
+
 CREATE TYPE status AS ENUM('Langar að horfa', 'Er að horfa', 'Hef horft');
 CREATE TABLE users_shows (
   id SERIAL PRIMARY KEY,
@@ -67,3 +75,4 @@ CREATE TABLE users_shows (
   rating INTEGER CHECK (rating between 0 and 5),
   status status
 );
+commit;

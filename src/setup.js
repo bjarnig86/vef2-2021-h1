@@ -1,5 +1,6 @@
 import { readFile } from 'fs/promises';
 import { query, end } from './db.js';
+//import { importData } from './importcsv.js'
 
 const schemaFile = './sql/schema.sql';
 
@@ -12,9 +13,10 @@ async function create() {
   await query(data.toString('utf-8'));
   console.info('Schema created');
 
-  await end();
+  //await end();
 }
 
-create().catch((err) => {
+await create().catch((err) => {
   console.error('Error creating schema', err);
 });
+

@@ -1,3 +1,8 @@
+Til að búa til töflur og setja inn gögn:
+keyra fyrst: npm run setup
+og svo: npm run import
+
+
 # Vefforritun 2, 2021, hópverkefni 1
 
 Útfæra skal vefþjónustur fyrir sjónvarpsþáttavef:
