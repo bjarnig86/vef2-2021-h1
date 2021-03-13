@@ -44,6 +44,7 @@ CREATE TABLE seasons (
   first_aired date,
   description text,
   poster varchar(255) NOT NULL
+  --vísun í sjónvarpsþátt
 );
 
 
@@ -53,6 +54,7 @@ CREATE TABLE episodes (
   number smallint NOT NULL CHECK (number > 0),
   first_aired date,
   description text
+  --vísun í season
 );
 
 
