@@ -7,7 +7,7 @@
     "dev": "nodemon ./src/app.js",
     "test": "eslint ./src --fix",
     "start": "node ./src/app.js",
-    "setup": "node ./src/setup.js && sleep 10 && node ./src/importcsv.js",
+    "setup": "node ./src/setup.js",
     "import": "node ./src/importcsv.js"
 
   },

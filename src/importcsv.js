@@ -9,12 +9,6 @@ import neatCsv from 'neat-csv';
 
 dotenv.config();
 
-function hi() {
-  console.log('hi');
-}
-
-setTimeout(hi, 2000);
-
 async function importGenres(rows) {
   let genres = [];
 //console.log('annað' + rows);
@@ -86,11 +80,11 @@ async function importShow(row) {
   return query(q, values);
 }
 
-function parseFile() {
+function parseFile(file) {
   console.log('parse-1');
   let results = [];
   return new Promise((resolve, reject) => {
-    fs.createReadStream('./data/series.csv')
+    fs.createReadStream(file)
       .on('error', error => {
         reject(error);
       })
@@ -104,10 +98,11 @@ function parseFile() {
     });
 }
 
-export async function importData() {
+export async function importSeries() {
   console.info('Starting import');
+  const file = './data/series.csv';
 
-  const rows = await parseFile();
+  const rows = await parseFile(file);
 
   await importGenres(rows);
 
@@ -121,6 +116,6 @@ export async function importData() {
   console.info('Finished!');
 }
 
-importData().catch((err) => {
+importSeries().catch((err) => {
   console.error('Error importing', err);
 });
