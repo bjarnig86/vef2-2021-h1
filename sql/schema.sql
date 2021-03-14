@@ -2,9 +2,9 @@ begin;
 DROP TABLE IF EXISTS shows_genres;
 DROP TABLE IF EXISTS users_shows;
 DROP TABLE IF EXISTS genres;
-DROP TABLE IF EXISTS shows;
-DROP TABLE IF EXISTS seasons;
 DROP TABLE IF EXISTS episodes;
+DROP TABLE IF EXISTS seasons;
+DROP TABLE IF EXISTS shows;
 DROP TABLE IF EXISTS users;
 DROP TYPE IF EXISTS status;
 
@@ -41,13 +41,14 @@ CREATE TABLE shows (
 
 
 CREATE TABLE seasons (
-  id serial primary key,
+  --id serial primary key,
   title varchar(255) NOT NULL,
   number smallint NOT NULL CHECK (number > 0),
   first_aired date,
   description text,
-  poster varchar(255) NOT NULL
-  --vísun í sjónvarpsþátt
+  poster varchar(255) NOT NULL,
+  show integer REFERENCES shows(id),
+  PRIMARY KEY (show, number)
 );
 
 
@@ -56,8 +57,10 @@ CREATE TABLE episodes (
   title varchar(255) NOT NULL,
   number smallint NOT NULL CHECK (number > 0),
   first_aired date,
-  description text
-  --vísun í season
+  description text,
+  season integer,
+  show integer,
+  FOREIGN KEY(show, season) REFERENCES seasons
 );
 
 
