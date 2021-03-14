@@ -2,14 +2,13 @@
   "name": "vef2-2021-h1",
   "version": "1.0.0",
   "description": "Útfæra skal vefþjónustur fyrir sjónvarpsþáttavef:",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "dev": "nodemon ./src/app.js",
     "test": "eslint ./src --fix",
     "start": "node ./src/app.js",
     "setup": "node ./src/setup.js",
     "import": "node ./src/importcsv.js"
-
   },
   "keywords": [],
   "author": "",
