@@ -143,14 +143,12 @@ router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
   // ef user sem á að breyta er admin
   if (getUser.rows[0].admin) {
     res.json({ error: 'User already is admin' });
+  } else {
+    // Breyting á user
+    const changeUser = await query(
+      `UPDATE users SET admin = true WHERE id = ${params.id}`
+    );
+
+    res.json({ status: 'User is now admin' });
   }
-
-  // Breyting á user
-  const changeUser = await query(
-    `UPDATE users SET admin = true WHERE id = ${params.id}`
-  );
-
-  res.json({ status: 'User is now admin' });
-  console.log('Params --> ', params);
-  console.log('body --> ', body);
 });
