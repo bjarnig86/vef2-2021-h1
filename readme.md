@@ -56,7 +56,7 @@ Keyrir logga á Heroku: --> `heroku logs -t`
 4. Vinna og gera breytingar.
 5. Commit-a: --> `gc -a -m"texti"`
 6. Push-a: --> `gp`
-7. Merge-a: Framkvæma Merge and pull request uppi á [github](https://github.com/bjarnig86/vef2-h1)
+7. Merge-a: Framkvæma "Compare & pull request" uppi á [github](https://github.com/bjarnig86/vef2-h1)
 8. Færa sig yfir á main til að sækja nýjasta: --> `git checkout main`
 
 
