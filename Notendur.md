@@ -22,6 +22,7 @@
 - POST /login: `{"username": "admin", "password": "123"}`
 
 - Í Postman:
+
   - POST
     --> http://<linkur.com>/login
     --> Body
@@ -30,12 +31,15 @@
     --> `{"username": "admin", "password": "123"}`
     --> Send
   - Ef password er rétt er `token` skilað
+
   - GET
     --> http://<linkur.com>/users
     --> GET --> Authorization
     --> Velja `Bearer Token`
     --> kópera `token` sem var skilað úr login
     --> Send
+  - Viðeigandi "message" koma svo hér
+
   - PATCH
     --> http://<linkur.com>/users/{id}
     --> Authorization
