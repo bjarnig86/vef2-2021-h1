@@ -19,7 +19,7 @@ if (!connectionString) {
 const ssl = nodeEnv !== 'development' ? { rejectUnauthorized: false } : false;
 
 // Setur upp tengi pool fyrir samskipti við gagnagrunn.
-const pool = new pg.Pool({ connectionString, ssl });
+const pool = new pg.Pool({ connectionString, ssl, max:1 });
 pool.on('error', (err) => {
   console.error('Villa í tengingu við gagnagrunn, forrit hættir', err);
   process.exit(-1);
