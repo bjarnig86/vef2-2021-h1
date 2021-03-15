@@ -50,14 +50,14 @@ Keyrir node skipanir á Heroku: --> `heroku run` + `skipun`
 Keyrir logga á Heroku: --> `heroku logs -t`
 
 ### Git vinnuhringur
-1. Sækja nýjasta: Verandi á main: --> `git pull`
-2. Fara yfir á branch: --> `git checkout aslaug/bjarni/einar/halli`
-3. Sameina: --> `git merge main`
-4. Vinna og gera breytingar.
-5. Commit-a: --> `gc -a -m"texti"`
-6. Push-a: --> `gp`
-7. Merge-a: Framkvæma "Compare & pull request" uppi á [github](https://github.com/bjarnig86/vef2-h1)
-8. Færa sig yfir á main til að sækja nýjasta: --> `git checkout main`
+1. Færa sig yfir á main til að sækja nýjasta: --> `git checkout main`
+2. Sækja nýjasta: Verandi á main: --> `git pull`
+3. Fara yfir á branch: --> `git checkout aslaug/bjarni/einar/halli`
+4. Sameina: --> `git merge main`
+5. Vinna og gera breytingar.
+6. Commit-a: --> `gc -a -m"texti"`
+7. Push-a: --> `gp`
+8. Merge-a: Framkvæma "Compare & pull request" uppi á [github](https://github.com/bjarnig86/vef2-h1) 
 
 
 > Útgáfa 0.1
