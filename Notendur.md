@@ -22,9 +22,30 @@
 - POST /login: `{"username": "admin", "password": "123"}`
 
 - Í Postman:
-  - POST --> http://<linkur.com>/login --> Body --> Raw --> JSON --> `{"username": "admin", "password": "123"}`
+  - POST
+    --> http://<linkur.com>/login
+    --> Body
+    --> Raw
+    --> JSON
+    --> `{"username": "admin", "password": "123"}`
+    --> Send
   - Ef password er rétt er `token` skilað
-  - GET --> http://<linkur.com>/users --> GET --> Authorization --> Velja `Bearer Token` --> kópera `token` sem var skilað úr login
+  - GET
+    --> http://<linkur.com>/users
+    --> GET --> Authorization
+    --> Velja `Bearer Token`
+    --> kópera `token` sem var skilað úr login
+    --> Send
+  - PATCH
+    --> http://<linkur.com>/users/{id}
+    --> Authorization
+    --> Velja `Bearer Token`
+    --> kópera `token` sem var skilað úr login
+    --> Body
+    --> Raw
+    --> JSON
+    --> `{"email": "bjarnirosacool@egercool.com"}`
+    --> Send
 
 # ENV Skrá
 

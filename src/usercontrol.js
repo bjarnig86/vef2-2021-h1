@@ -5,6 +5,7 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
 
 import { comparePasswords, findByUsername, findById } from './users.js';
+import { query } from './db.js';
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ export const router = express.Router();
 const {
   PORT: port = 3000,
   JWT_SECRET: jwtSecret,
-  TOKEN_LIFETIME: tokenLifetime = 60,
+  TOKEN_LIFETIME: tokenLifetime = 120,
   DATABASE_URL: databaseUrl,
 } = process.env;
 
@@ -77,7 +78,7 @@ function requireAdminAuthentication(req, res, next) {
     }
 
     if (!user.admin) {
-      return res.status(401).json({ error: 'This user is not an admin user' });
+      return res.status(401).json({ error: 'Not an admin user' });
     }
 
     req.user = user;
@@ -85,7 +86,7 @@ function requireAdminAuthentication(req, res, next) {
   })(req, res, next);
 }
 
-router.post('/login', async (req, res) => {
+router.post('/users/login', async (req, res) => {
   const { username, password = '' } = req.body;
 
   const user = await findByUsername(username);
@@ -106,6 +107,50 @@ router.post('/login', async (req, res) => {
   return res.status(401).json({ error: 'Invalid password' });
 });
 
-router.get('/users', requireAdminAuthentication, (req, res) => {
-  res.json({ TEST: 'Yooooooo!!' });
+router.get('/users', requireAdminAuthentication, async (req, res) => {
+  const allusers = await query('SELECT * FROM users');
+  const users = [];
+  allusers.rows.map((row) => {
+    let user = { id: row.id, username: row.username, email: row.email };
+    return users.push(user);
+  });
+  res.json({ users });
+});
+
+router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
+  const params = req.params;
+  const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
+  const user = {
+    id: getUser.rows[0].id,
+    username: getUser.rows[0].username,
+    email: getUser.rows[0].email,
+  };
+  res.json(user);
+});
+
+router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
+  const params = req.params;
+  const body = req.body;
+  const currentUser = req.user;
+
+  // ef reynt er að breyta sér sjálfum
+  if (currentUser.id === params.id) {
+    res.json({ error: 'Can only change other users' });
+  }
+
+  const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
+
+  // ef user sem á að breyta er admin
+  if (getUser.rows[0].admin) {
+    res.json({ error: 'User already is admin' });
+  }
+
+  // Breyting á user
+  const changeUser = await query(
+    `UPDATE users SET admin = true WHERE id = ${params.id}`
+  );
+
+  res.json({ status: 'User is now admin' });
+  console.log('Params --> ', params);
+  console.log('body --> ', body);
 });
