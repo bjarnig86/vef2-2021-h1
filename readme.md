@@ -241,18 +241,50 @@ Sett verða fyrir tvö hópverkefni þar sem hvort um sig gildir 10%, samtals 20
 | 0.2 | Lýsing á gögnum, lýsing á þjónustum, mat, gögn |
 |--------|--------|
 
-## NTG
 
-Bætti við undirkafla í Readme: "Note To Group" til að halda aðeins utan um nauðsynlegar upplýsingar sem við þurfum að vita og muna. (Halli)
+
+# Vefforritun 2, 2021, Hópverkefni 1
+
+Sjá lýsingu verkefnis: [verkefni 4](https://github.com/vefforritun/vef2-2021-h1)
+
+## Leiðbeiningar
+
+Setja repo upp locally: --> `gh repo clone bjarnig86/vef2-h1`
 
 Setja upp umhverfi locally:
 --> `npm install`
 
-Starta postgres server locally (Linux):
+Starta postgres server locally á unix tölvu:
 --> `sudo service postgresql start`
+
+Starta postgres server locally á Windows tölvu:
+--> `???`
+
 
 Stofna þarf gagnagrunn locally og setja userstreng í .env skrá á rót verkefnis:
 `DATABASE_URL=postgres://<USER>:<PASS>@localhost/<DATABASENAME>`
 
-Setja töflu í gagnagrunn með fake gögnum:
+Setja töflur í gagnagrunn:
 --> `npm run setup`
+
+Keyra gög inn í gagnagrunn:
+--> `npm run importcsv`
+
+Keyra eslint á js skjöl og Stylelint á scss skjöl: --> `npm test`
+
+Sett upp á Heroku app sem [hopedihop1](https://hopedihop1.herokuapp.com/)
+
+## NTG
+
+Bætti við undirkafla í Readme: "Note To Group" til að halda aðeins utan um nauðsynlegar upplýsingar sem við þurfum að vita og muna. (Halli)
+
+Vinna með gagnagrunn í terminal sem postgres user: --> `sudo -u postgres psql vef2-v3`
+
+Pushar yfir á Heroku: --> `gp heroku`
+
+Keyrir setup á Heroku: --> `heroku run npm run setup`
+
+Keyrir logga á Heroku: --> `heroku logs -t`
+
+
+> Útgáfa 0.1
