@@ -151,7 +151,7 @@ Ef beðið er um einingu eða reynt að framkvæma aðgerð sem ekki er leyfi fy
   - `PATCH` breytir hvort notandi sé stjórnandi eða ekki, aðeins ef notandi sem framkvæmir er stjórnandi og er ekki að breyta sér sjálfum <komið (ish)>
 - `/users/register`
   - `POST` staðfestir og býr til notanda. Skilar auðkenni og netfangi. Notandi sem búinn er til skal aldrei vera stjórnandi
-- `/users/login`
+- `/users/login` <komið>
   - `POST` með netfangi og lykilorði skilar token ef gögn rétt
 - `/users/me`
   - `GET` skilar upplýsingum um notanda sem á token, auðkenni og netfangi, aðeins ef notandi innskráður

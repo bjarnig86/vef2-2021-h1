@@ -86,7 +86,7 @@ function requireAdminAuthentication(req, res, next) {
   })(req, res, next);
 }
 
-router.post('/login', async (req, res) => {
+router.post('/users/login', async (req, res) => {
   const { username, password = '' } = req.body;
 
   const user = await findByUsername(username);
