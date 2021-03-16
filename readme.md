@@ -2,6 +2,7 @@ Til að búa til töflur og setja inn gögn:
 keyra fyrst: npm run setup
 og svo: npm run import
 
+
 # Vefforritun 2, 2021, Hópverkefni 1
 
 Sjá lýsingu verkefnis: [verkefni 4](https://github.com/vefforritun/vef2-2021-h1)
@@ -21,9 +22,6 @@ Starta postgres server locally á unix tölvu:
 Starta postgres server locally á Windows tölvu:
 --> `???`
 
-Setja þarf .env skjal í rót skv. .env.example
-
-Stofna þarf gagnagrunn locally og setja réttan userstreng í .env skránna:
 `DATABASE_URL=postgres://<USER>:<PASS>@localhost/<DATABASENAME>`
 
 Setja töflur í gagnagrunn:
@@ -49,6 +47,7 @@ Keyrir node skipanir á Heroku: --> `heroku run` + `skipun`
 
 Keyrir logga á Heroku: --> `heroku logs -t`
 
+
 ### Git vinnuhringur
 1. Færa sig yfir á main til að sækja nýjasta: --> `git checkout main`
 2. Sækja nýjasta: Verandi á main: --> `git pull`
@@ -58,6 +57,5 @@ Keyrir logga á Heroku: --> `heroku logs -t`
 6. Commit-a: --> `gc -a -m"texti"`
 7. Push-a: --> `gp`
 8. Merge-a: Framkvæma "Compare & pull request" uppi á [github](https://github.com/bjarnig86/vef2-h1) 
-
 
 > Útgáfa 0.1
