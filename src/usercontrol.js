@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 import express from 'express';
 import passport from 'passport';
 import dotenv from 'dotenv';
@@ -5,7 +6,10 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
 
 import {
-  comparePasswords, findByUsername, findById, registerUser,
+  comparePasswords,
+  findByUsername,
+  findById,
+  registerUser,
 } from './users.js';
 import { query } from './db.js';
 
@@ -47,7 +51,7 @@ passport.use(new Strategy(jwtOptions, strat));
 
 router.use(passport.initialize());
 
-function requireAuthentication(req, res, next) {
+export function requireAuthentication(req, res, next) {
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       return next(err);
@@ -66,8 +70,7 @@ function requireAuthentication(req, res, next) {
   })(req, res, next);
 }
 
-
-function requireAdminAuthentication(req, res, next) {
+export function requireAdminAuthentication(req, res, next) {
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       return next(err);
@@ -157,9 +160,7 @@ router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
     return res.json({ error: 'User already is admin' });
   } else {
     // Breyting á user
-    const changeUser = await query(
-      `UPDATE users SET admin = true WHERE id = ${params.id}`
-    );
+    await query(`UPDATE users SET admin = true WHERE id = ${params.id}`);
 
     return res.json({ status: 'User is now admin' });
   }
