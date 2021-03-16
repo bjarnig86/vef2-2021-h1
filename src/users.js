@@ -41,7 +41,7 @@ export async function findById(id) {
 }
 
 export async function registerUser(username, email, password) {
-  const hashedPassword = await bcrypt.hash(password, 11);
+  const hashedPassword = await hashPassword(password);
   const q =
     'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id';
 
@@ -56,4 +56,8 @@ export async function registerUser(username, email, password) {
   }
 
   return null;
+}
+
+export async function hashPassword(password) {
+  return await bcrypt.hash(password, 11);
 }
