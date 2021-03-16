@@ -6,7 +6,10 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
 
 import {
-  comparePasswords, findByUsername, findById, registerUser,
+  comparePasswords,
+  findByUsername,
+  findById,
+  registerUser,
 } from './users.js';
 import { query } from './db.js';
 
@@ -49,7 +52,6 @@ passport.use(new Strategy(jwtOptions, strat));
 router.use(passport.initialize());
 
 export function requireAuthentication(req, res, next) {
-
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       return next(err);
@@ -68,10 +70,8 @@ export function requireAuthentication(req, res, next) {
   })(req, res, next);
 }
 
-
 export function requireAdminAuthentication(req, res, next) {
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
-
     if (err) {
       return next(err);
     }
@@ -115,7 +115,7 @@ router.post('/users/login', async (req, res) => {
 
 router.get('/users', requireAdminAuthentication, async (req, res) => {
   console.log(`usercontrol.js router.post('/users') -> req: ${req}`);
-  
+
   const allusers = await query('SELECT * FROM users');
   const users = [];
   allusers.rows.map((row) => {
@@ -162,9 +162,7 @@ router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
     return res.json({ error: 'User already is admin' });
   } else {
     // Breyting á user
-    const changeUser = await query(
-      `UPDATE users SET admin = true WHERE id = ${params.id}`
-    );
+    await query(`UPDATE users SET admin = true WHERE id = ${params.id}`);
 
     return res.json({ status: 'User is now admin' });
   }
@@ -174,7 +172,6 @@ router.post('/users/register', async (req, res) => {
   const { username, email, password = '' } = req.body;
   // console.log(`usercontrol.js router.post('/users/login') -> req.header: ${}`);
   const user = await findByUsername(username);
-
 
   if (user) {
     return res.status(401).json({ error: 'User already registered' });

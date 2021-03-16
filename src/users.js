@@ -70,10 +70,12 @@ export async function findById(id) {
 }
 
 export async function registerUser(username, email, password) {
-  const q = 'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id';
+  const hashedPassword = await bcrypt.hash(password, 11);
+  const q =
+    'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id';
 
   try {
-    const result = await query(q, [username, email, password]);
+    const result = await query(q, [username, email, hashedPassword]);
 
     if (result.rowCount === 1) {
       return result.rows[0];
