@@ -2,12 +2,13 @@
   "name": "vef2-2021-h1",
   "version": "1.0.0",
   "description": "Útfæra skal vefþjónustur fyrir sjónvarpsþáttavef:",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "dev": "nodemon ./src/app.js",
     "test": "eslint ./src --fix",
     "start": "node ./src/app.js",
-    "setup": "node ./src/setup.js"
+    "setup": "node ./src/setup.js",
+    "import": "node ./src/importcsv.js"
   },
   "keywords": [],
   "author": "",
@@ -15,10 +16,13 @@
   "dependencies": {
     "bcrypt": "^5.0.1",
     "cloudinary": "^1.25.0",
+    "csv-parser": "^3.0.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "express-validator": "^6.10.0",
+    "jsonwebtoken": "^8.5.1",
+    "neat-csv": "^6.0.1",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
