@@ -113,7 +113,7 @@ async function validationCheckTVShow(req, res, next) {
     return res.json({ errors: validation.errors });
   }
 
-  next();
+  return next();
 }
 
 router.post(
@@ -123,7 +123,7 @@ router.post(
   xssSanitizationTVShow,
   catchErrors(validationCheckTVShow),
 
-  async (req, res) => {
+  async (req, res, next) => {
     const {
       title,
       first_aired,
