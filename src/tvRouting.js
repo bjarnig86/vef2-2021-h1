@@ -91,3 +91,41 @@ router.post('/tv', requireAdminAuthentication, async (req, res, next) => {
 
   return res.json(result);
 });
+
+/**
+ * /tv/:id GET skilar stöku sjónvarpsþáttum með grunnupplýsingum,
+ * meðal einkunn sjónvarpsþáttar, fjölda einkunna sem hafa verið
+ * skráðar fyrir sjónvarpsþátt, fylki af tegundum sjónvarpsþáttar
+ * (genres), fylki af seasons, rating notanda, staða notanda
+ */
+ router.get('/tv/:id', requireAuthentication, async (req, res, next) => {
+  console.log(`tvRouting.js: /tv/:id req.params.id --> ${req.params.id}`);
+  
+  const currentUser = req.user;
+
+  const qA = 'SELECT row_to_json (shows) FROM shows WHERE id = $1';
+  const show = await query(qA, [req.params.id]);
+  
+  const qB = 'SELECT * FROM users_shows WHERE show = $1';
+  const userShow = await query(qB, [req.params.id]);
+
+  let showRatingTotal= 0;
+  userShow.rows.forEach(element => {
+    showRatingTotal += element.rating;
+  });
+
+  // const showRatingAverage = showRatingTotal / userShow.rows.length;
+  // console.log(`showRatingTotal: ${showRatingTotal}`);
+  // console.log(`showRatingAverage: ${showRatingAverage}`);
+
+  // q = 'SELECT rating FROM users_shows WHERE show = $1';
+
+  const result = {
+    show: show.rows[0].row_to_json,
+    showRatingAverage: showRatingTotal / userShow.rows.length,
+    showRatingCount: userShow.rows.length,
+   };
+  
+
+  res.json(result);
+});

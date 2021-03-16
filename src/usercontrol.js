@@ -20,7 +20,7 @@ export const router = express.Router();
 const {
   PORT: port = 3000,
   JWT_SECRET: jwtSecret,
-  TOKEN_LIFETIME: tokenLifetime = 120,
+  TOKEN_LIFETIME: tokenLifetime = 1200,
   DATABASE_URL: databaseUrl,
 } = process.env;
 
