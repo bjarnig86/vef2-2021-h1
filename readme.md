@@ -30,7 +30,7 @@ Setja töflur í gagnagrunn:
 --> `npm run setup`
 
 Keyra gög inn í gagnagrunn:
---> `npm run importcsv`
+--> `npm run import`
 
 Keyra eslint á js skjöl og Stylelint á scss skjöl: --> `npm test`
 
@@ -39,23 +39,23 @@ Setja vefþjón í gang:
 
 ## NTG
 
-Bætti við undirkafla í Readme: "Note To Group" til að halda aðeins utan um nauðsynlegar upplýsingar sem við þurfum að vita og muna. (Halli)
+"Note To Group" til að halda aðeins utan um nauðsynlegar upplýsingar sem við þurfum að vita og muna.
 
-Vinna með gagnagrunn í terminal sem postgres user: --> `sudo -u postgres psql vef2-v3`
+Vinna með gagnagrunn í terminal sem postgres user: --> `sudo -u postgres psql <nafn_gagnagrunns>`
 
 Pushar yfir á Heroku: --> `gp heroku`
 
-Keyrir node skipanir á Heroku: --> `heroku run` + `skipun`
+Keyrir node skipanir á Heroku: --> `heroku run` + `<skipun>`
 
 Keyrir logga á Heroku: --> `heroku logs -t`
 
 ### Git vinnuhringur
 1. Færa sig yfir á main til að sækja nýjasta: --> `git checkout main`
 2. Sækja nýjasta: Verandi á main: --> `git pull`
-3. Fara yfir á branch: --> `git checkout aslaug/bjarni/einar/halli`
+3. Fara yfir á branch: --> `git checkout <branch>`
 4. Sameina: --> `git merge main`
 5. Vinna og gera breytingar.
-6. Commit-a: --> `gc -a -m"texti"`
+6. Commit-a: --> `gc -a -m"<texti>"`
 7. Push-a: --> `gp`
 8. Merge-a: Framkvæma "Compare & pull request" uppi á [github](https://github.com/bjarnig86/vef2-h1) 
 
