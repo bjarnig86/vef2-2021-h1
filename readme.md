@@ -152,9 +152,9 @@ Ef beðið er um einingu eða reynt að framkvæma aðgerð sem ekki er leyfi fy
 - `/users/register`
   - `POST` staðfestir og býr til notanda. Skilar auðkenni og netfangi. Notandi sem búinn er til skal aldrei vera stjórnandi
 - `/users/login` <komið>
-  - `POST` með netfangi og lykilorði skilar token ef gögn rétt
+  - `POST` með netfangi og lykilorði skilar token ef gögn rétt <komið>
 - `/users/me`
-  - `GET` skilar upplýsingum um notanda sem á token, auðkenni og netfangi, aðeins ef notandi innskráður
+  - `GET` skilar upplýsingum um notanda sem á token, auðkenni og netfangi, aðeins ef notandi innskráður <komið>
   - `PATCH` uppfærir netfang, lykilorð eða bæði ef gögn rétt, aðeins ef notandi innskráður
 
 Aldrei skal skila eða sýna hash fyrir lykilorð.
@@ -241,8 +241,6 @@ Sett verða fyrir tvö hópverkefni þar sem hvort um sig gildir 10%, samtals 20
 | 0.2 | Lýsing á gögnum, lýsing á þjónustum, mat, gögn |
 |--------|--------|
 
-
-
 # Vefforritun 2, 2021, Hópverkefni 1
 
 Sjá lýsingu verkefnis: [verkefni 4](https://github.com/vefforritun/vef2-2021-h1)
@@ -259,7 +257,6 @@ Starta postgres server locally á unix tölvu:
 
 Starta postgres server locally á Windows tölvu:
 --> `???`
-
 
 Stofna þarf gagnagrunn locally og setja userstreng í .env skrá á rót verkefnis:
 `DATABASE_URL=postgres://<USER>:<PASS>@localhost/<DATABASENAME>`
@@ -285,6 +282,5 @@ Pushar yfir á Heroku: --> `gp heroku`
 Keyrir setup á Heroku: --> `heroku run npm run setup`
 
 Keyrir logga á Heroku: --> `heroku logs -t`
-
 
 > Útgáfa 0.1

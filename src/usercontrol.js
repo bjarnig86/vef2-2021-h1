@@ -114,7 +114,13 @@ router.get('/users', requireAdminAuthentication, async (req, res) => {
     let user = { id: row.id, username: row.username, email: row.email };
     return users.push(user);
   });
-  res.json({ users });
+  return res.json({ users });
+});
+
+router.get('/users/me', requireAuthentication, async (req, res) => {
+  const { id, username, email } = req.user;
+  const user = { id: id, username: username, email: email };
+  return res.json(user);
 });
 
 router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
@@ -125,7 +131,8 @@ router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
     username: getUser.rows[0].username,
     email: getUser.rows[0].email,
   };
-  res.json(user);
+
+  return res.json(user);
 });
 
 router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
@@ -135,20 +142,20 @@ router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
 
   // ef reynt er að breyta sér sjálfum
   if (currentUser.id === params.id) {
-    res.json({ error: 'Can only change other users' });
+    return res.json({ error: 'Can only change other users' });
   }
 
   const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
 
   // ef user sem á að breyta er admin
   if (getUser.rows[0].admin) {
-    res.json({ error: 'User already is admin' });
+    return res.json({ error: 'User already is admin' });
   } else {
     // Breyting á user
     const changeUser = await query(
       `UPDATE users SET admin = true WHERE id = ${params.id}`
     );
 
-    res.json({ status: 'User is now admin' });
+    return res.json({ status: 'User is now admin' });
   }
 });
