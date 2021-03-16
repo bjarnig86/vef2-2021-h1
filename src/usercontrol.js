@@ -18,13 +18,11 @@ dotenv.config();
 export const router = express.Router();
 
 const {
-  PORT: port = 3000,
   JWT_SECRET: jwtSecret,
   TOKEN_LIFETIME: tokenLifetime = 1200,
-  DATABASE_URL: databaseUrl,
 } = process.env;
 
-if (!jwtSecret || !databaseUrl) {
+if (!jwtSecret) {
   console.error('Vantar .env gildi');
   process.exit(1);
 }
