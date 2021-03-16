@@ -106,32 +106,8 @@ const xssSanitizationTVShow = [
 ];
 
 async function validationCheckTVShow(req, res, next) {
-  const {
-    title,
-    first_aired,
-    in_production,
-    tagline,
-    image,
-    description,
-    language,
-    network,
-    webpage,
-  } = req.body;
-
-  const showData = {
-    title,
-    first_aired,
-    in_production,
-    tagline,
-    image,
-    description,
-    language,
-    network,
-    webpage,
-  };
-
   const validation = validationResult(req);
-  console.log('validation :>> ', validation);
+  //   console.log('validation :>> ', validation);
 
   if (!validation.isEmpty()) {
     return res.json({ errors: validation.errors });
