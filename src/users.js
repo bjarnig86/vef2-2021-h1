@@ -68,3 +68,19 @@ export async function findById(id) {
 
   return null;
 }
+
+export async function registerUser(username, email, password) {
+  const q = 'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id';
+
+  try {
+    const result = await query(q, [username, email, password]);
+
+    if (result.rowCount === 1) {
+      return result.rows[0];
+    }
+  } catch (e) {
+    console.error('Postgres: Could not register user');
+  }
+
+  return null;
+}
