@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 import express from 'express';
 import passport from 'passport';
 import dotenv from 'dotenv';
@@ -47,8 +48,8 @@ passport.use(new Strategy(jwtOptions, strat));
 
 router.use(passport.initialize());
 
-function requireAuthentication(req, res, next) {
-  
+export function requireAuthentication(req, res, next) {
+
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       return next(err);
@@ -67,9 +68,10 @@ function requireAuthentication(req, res, next) {
   })(req, res, next);
 }
 
-function requireAdminAuthentication(req, res, next) {
-  console.log(`usercontrol.js requireAdminAuthentication -> req: ${req}`);
-    return passport.authenticate('jwt', { session: false }, (err, user, info) => {
+
+export function requireAdminAuthentication(req, res, next) {
+  return passport.authenticate('jwt', { session: false }, (err, user, info) => {
+
     if (err) {
       return next(err);
     }
@@ -172,6 +174,7 @@ router.post('/users/register', async (req, res) => {
   const { username, email, password = '' } = req.body;
   // console.log(`usercontrol.js router.post('/users/login') -> req.header: ${}`);
   const user = await findByUsername(username);
+
 
   if (user) {
     return res.status(401).json({ error: 'User already registered' });
