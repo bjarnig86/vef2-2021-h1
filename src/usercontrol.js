@@ -19,7 +19,7 @@ export const router = express.Router();
 
 const {
   JWT_SECRET: jwtSecret,
-  TOKEN_LIFETIME: tokenLifetime = 120,
+  TOKEN_LIFETIME: tokenLifetime = 1200,
 } = process.env;
 
 if (!jwtSecret) {
@@ -90,9 +90,11 @@ export function requireAdminAuthentication(req, res, next) {
   })(req, res, next);
 }
 
+/**
+ * Skráir notanda inn.
+ */
 router.post('/users/login', async (req, res) => {
   const { username, password = '' } = req.body;
-  // console.log(`usercontrol.js router.post('/users/login') -> req.header: ${}`);
   const user = await findByUsername(username);
 
   if (!user) {
@@ -112,8 +114,6 @@ router.post('/users/login', async (req, res) => {
 });
 
 router.get('/users', requireAdminAuthentication, async (req, res) => {
-  console.log(`usercontrol.js router.post('/users') -> req: ${req}`);
-
   const allusers = await query('SELECT * FROM users');
   const users = [];
   allusers.rows.map((row) => {
@@ -130,7 +130,6 @@ router.get('/users/me', requireAuthentication, async (req, res) => {
 });
 
 router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
-  console.log(`usercontrol.js router.post('/users/:id') -> req: ${req}`);
   const params = req.params;
   const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
   const user = {
@@ -143,7 +142,6 @@ router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
 });
 
 router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
-  console.log(`usercontrol.js router.patch('/users/:id') -> req: ${req}`);
   const params = req.params;
   const body = req.body;
   const currentUser = req.user;
@@ -166,9 +164,11 @@ router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
   }
 });
 
+/**
+ * Skráir nýjan notanda í gagnagrunn.
+ */
 router.post('/users/register', async (req, res) => {
   const { username, email, password = '' } = req.body;
-  // console.log(`usercontrol.js router.post('/users/login') -> req.header: ${}`);
   const user = await findByUsername(username);
 
   if (user) {
@@ -176,8 +176,6 @@ router.post('/users/register', async (req, res) => {
   }
 
   const id = registerUser(username, email, password);
-
-  // const passwordIsCorrect = await comparePasswords(password, user.password);
 
   if (id) {
     const payload = { id };
