@@ -5,7 +5,9 @@ import dotenv from 'dotenv';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
 
-import { comparePasswords, findByUsername, findById } from './users.js';
+import {
+  comparePasswords, findByUsername, findById, registerUser,
+} from './users.js';
 import { query } from './db.js';
 
 dotenv.config();
@@ -47,6 +49,7 @@ passport.use(new Strategy(jwtOptions, strat));
 router.use(passport.initialize());
 
 export function requireAuthentication(req, res, next) {
+
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       return next(err);
@@ -65,8 +68,10 @@ export function requireAuthentication(req, res, next) {
   })(req, res, next);
 }
 
+
 export function requireAdminAuthentication(req, res, next) {
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
+
     if (err) {
       return next(err);
     }
@@ -89,7 +94,7 @@ export function requireAdminAuthentication(req, res, next) {
 
 router.post('/users/login', async (req, res) => {
   const { username, password = '' } = req.body;
-
+  // console.log(`usercontrol.js router.post('/users/login') -> req.header: ${}`);
   const user = await findByUsername(username);
 
   if (!user) {
@@ -109,16 +114,25 @@ router.post('/users/login', async (req, res) => {
 });
 
 router.get('/users', requireAdminAuthentication, async (req, res) => {
+  console.log(`usercontrol.js router.post('/users') -> req: ${req}`);
+  
   const allusers = await query('SELECT * FROM users');
   const users = [];
   allusers.rows.map((row) => {
     let user = { id: row.id, username: row.username, email: row.email };
     return users.push(user);
   });
-  res.json({ users });
+  return res.json({ users });
+});
+
+router.get('/users/me', requireAuthentication, async (req, res) => {
+  const { id, username, email } = req.user;
+  const user = { id: id, username: username, email: email };
+  return res.json(user);
 });
 
 router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
+  console.log(`usercontrol.js router.post('/users/:id') -> req: ${req}`);
   const params = req.params;
   const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
   const user = {
@@ -126,32 +140,56 @@ router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
     username: getUser.rows[0].username,
     email: getUser.rows[0].email,
   };
-  res.json(user);
+
+  return res.json(user);
 });
 
 router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
+  console.log(`usercontrol.js router.patch('/users/:id') -> req: ${req}`);
   const params = req.params;
   const body = req.body;
   const currentUser = req.user;
 
   // ef reynt er að breyta sér sjálfum
   if (currentUser.id === params.id) {
-    res.json({ error: 'Can only change other users' });
+    return res.json({ error: 'Can only change other users' });
   }
 
   const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
 
   // ef user sem á að breyta er admin
   if (getUser.rows[0].admin) {
-    res.json({ error: 'User already is admin' });
+    return res.json({ error: 'User already is admin' });
+  } else {
+    // Breyting á user
+    const changeUser = await query(
+      `UPDATE users SET admin = true WHERE id = ${params.id}`
+    );
+
+    return res.json({ status: 'User is now admin' });
+  }
+});
+
+router.post('/users/register', async (req, res) => {
+  const { username, email, password = '' } = req.body;
+  // console.log(`usercontrol.js router.post('/users/login') -> req.header: ${}`);
+  const user = await findByUsername(username);
+
+
+  if (user) {
+    return res.status(401).json({ error: 'User already registered' });
   }
 
-  // Breyting á user
-  const changeUser = await query(
-    `UPDATE users SET admin = true WHERE id = ${params.id}`,
-  );
+  const id = registerUser(username, email, password);
 
-  res.json({ status: 'User is now admin' });
-  console.log('Params --> ', params);
-  console.log('body --> ', body);
+  // const passwordIsCorrect = await comparePasswords(password, user.password);
+
+  if (id) {
+    const payload = { id };
+    const tokenOptions = { expiresIn: tokenLifetime };
+    const token = jwt.sign(payload, jwtOptions.secretOrKey, tokenOptions);
+    return res.json({ token });
+  }
+
+  return res.status(401).json({ error: 'Could not register user ' });
 });

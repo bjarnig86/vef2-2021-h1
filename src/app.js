@@ -6,7 +6,7 @@ import { router as tvRouter } from './tvRouting.js';
 
 dotenv.config();
 
-const { PORT: port = 3002 } = process.env;
+const { PORT: port = 3000 } = process.env;
 
 const app = express();
 
