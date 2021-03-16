@@ -13,6 +13,12 @@ pool.on('error', (err) => {
   process.exit(-1);
 });
 
+/**
+ * Kallar í gagnagrunn og skilar svari.
+ * @param {*} q Query strengur sendur inn.
+ * @param {*} values Gildi fyrir streng.
+ * @returns Svar frá gagnagrunni.
+ */
 export async function query(q, values = []) {
   const client = await pool.connect();
 

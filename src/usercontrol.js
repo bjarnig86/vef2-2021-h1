@@ -48,7 +48,6 @@ passport.use(new Strategy(jwtOptions, strat));
 router.use(passport.initialize());
 
 function requireAuthentication(req, res, next) {
-  
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       return next(err);
@@ -67,9 +66,9 @@ function requireAuthentication(req, res, next) {
   })(req, res, next);
 }
 
+
 function requireAdminAuthentication(req, res, next) {
-  console.log(`usercontrol.js requireAdminAuthentication -> req: ${req}`);
-    return passport.authenticate('jwt', { session: false }, (err, user, info) => {
+  return passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       return next(err);
     }
@@ -90,9 +89,11 @@ function requireAdminAuthentication(req, res, next) {
   })(req, res, next);
 }
 
+/**
+ * Skráir notanda inn.
+ */
 router.post('/users/login', async (req, res) => {
   const { username, password = '' } = req.body;
-  // console.log(`usercontrol.js router.post('/users/login') -> req.header: ${}`);
   const user = await findByUsername(username);
 
   if (!user) {
@@ -112,8 +113,6 @@ router.post('/users/login', async (req, res) => {
 });
 
 router.get('/users', requireAdminAuthentication, async (req, res) => {
-  console.log(`usercontrol.js router.post('/users') -> req: ${req}`);
-  
   const allusers = await query('SELECT * FROM users');
   const users = [];
   allusers.rows.map((row) => {
@@ -130,7 +129,6 @@ router.get('/users/me', requireAuthentication, async (req, res) => {
 });
 
 router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
-  console.log(`usercontrol.js router.post('/users/:id') -> req: ${req}`);
   const params = req.params;
   const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
   const user = {
@@ -143,7 +141,6 @@ router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
 });
 
 router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
-  console.log(`usercontrol.js router.patch('/users/:id') -> req: ${req}`);
   const params = req.params;
   const body = req.body;
   const currentUser = req.user;
@@ -168,9 +165,11 @@ router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
   }
 });
 
+/**
+ * Skráir nýjan notanda í gagnagrunn.
+ */
 router.post('/users/register', async (req, res) => {
   const { username, email, password = '' } = req.body;
-  // console.log(`usercontrol.js router.post('/users/login') -> req.header: ${}`);
   const user = await findByUsername(username);
 
   if (user) {
@@ -178,8 +177,6 @@ router.post('/users/register', async (req, res) => {
   }
 
   const id = registerUser(username, email, password);
-
-  // const passwordIsCorrect = await comparePasswords(password, user.password);
 
   if (id) {
     const payload = { id };

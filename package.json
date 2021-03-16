@@ -8,6 +8,7 @@
     "test": "eslint ./src --fix",
     "start": "node ./src/app.js",
     "setup": "node ./src/setup.js",
+    "docs": "jsdoc -c jsdoc.json",
     "import": "node ./src/importcsv.js"
   },
   "keywords": [],
@@ -32,6 +33,7 @@
     "eslint": "^7.21.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
+    "jsdoc": "^3.6.6",
     "nodemon": "^2.0.7"
   }
 }

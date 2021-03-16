@@ -27,8 +27,11 @@ Starta postgres server locally á Windows tölvu:
 Setja töflur í gagnagrunn:
 --> `npm run setup`
 
-Keyra gög inn í gagnagrunn:
+Keyra gögn inn í gagnagrunn:
 --> `npm run import`
+
+Uppfæra jsdoc:
+--> `npm run jsdoc`
 
 Keyra eslint á js skjöl og Stylelint á scss skjöl: --> `npm test`
 
