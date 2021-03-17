@@ -160,39 +160,52 @@ router.post(
 );
 
 /**
- * /tv/:id GET skilar stöku sjónvarpsþáttum með grunnupplýsingum,
- * meðal einkunn sjónvarpsþáttar, fjölda einkunna sem hafa verið
- * skráðar fyrir sjónvarpsþátt, fylki af tegundum sjónvarpsþáttar
- * (genres), fylki af seasons, rating notanda, staða notanda
+ * /tv/:id GET skilar
+ * stöku sjónvarpsþáttum með grunnupplýsingum,
+ * meðal einkunn sjónvarpsþáttar,
+ * fjölda einkunna sem hafa verið skráðar fyrir sjónvarpsþátt,
+ * fylki af tegundum sjónvarpsþáttar(genres),
+ * fylki af seasons,
+ * rating notanda,
+ * staða notanda
  */
  router.get('/tv/:id', requireAuthentication, async (req, res, next) => {
-  console.log(`tvRouting.js: /tv/:id req.params.id --> ${req.params.id}`);
-  
-  const currentUser = req.user;
+  // console.log(`tvRouting.js: /tv/:id req.params.id --> ${req.params.id}`);
+  // console.log(`tvRouting.js: /tv/:id req.user.admin --> ${req.user.admin}`);
+  // console.log(`tvRouting.js: /tv/:id req.user.id --> ${req.user.id}`);
 
-  const qA = 'SELECT row_to_json (shows) FROM shows WHERE id = $1';
-  const show = await query(qA, [req.params.id]);
   
-  const qB = 'SELECT * FROM users_shows WHERE show = $1';
-  const userShow = await query(qB, [req.params.id]);
+  const getShow = 'SELECT row_to_json (shows) FROM shows WHERE id = $1';
+  const show = await query(getShow, [req.params.id]);
 
-  let showRatingTotal= 0;
-  userShow.rows.forEach(element => {
+  const getUserShow = 'SELECT * FROM users_shows WHERE show = $1';
+  const userShow = await query(getUserShow, [req.params.id]);
+
+  const getUserRating = 'SELECT rating FROM users_shows WHERE "user" = $1 AND show = $2';
+  const userRating = await query(getUserRating, [req.user.id, req.params.id]);
+
+  const getGenres = 'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
+  const showGenres = await query(getGenres, [req.params.id]);
+
+  const getSeasons = 'SELECT * FROM seasons WHERE show = $1;';
+  const showSeasons = await query(getSeasons, [req.params.id]);
+
+  let showRatingTotal = 0;
+  userShow.rows.forEach((element) => {
     showRatingTotal += element.rating;
   });
 
-  // const showRatingAverage = showRatingTotal / userShow.rows.length;
-  // console.log(`showRatingTotal: ${showRatingTotal}`);
-  // console.log(`showRatingAverage: ${showRatingAverage}`);
-
-  // q = 'SELECT rating FROM users_shows WHERE show = $1';
-
   const result = {
     show: show.rows[0].row_to_json,
-    showRatingAverage: showRatingTotal / userShow.rows.length,
-    showRatingCount: userShow.rows.length,
-   };
-  
+    showRatings: {
+      showRatingAverage: showRatingTotal / userShow.rows.length,
+      showRatingCount: userShow.rows.length,
+      userRating: userRating.rows[0].rating,
+    },
+    showGenres: showGenres.rows[0].json_agg,
+    showSeasons: showSeasons.rows,
+    userAdminStatus: req.user.admin,
+  };
 
   res.json(result);
 });
