@@ -26,11 +26,7 @@ function catchErrors(fn) {
   return (req, res, next) => fn(req, res, next).catch(next);
 }
 
-/* get á /tv - `GET` skilar síðum af sjónvarpsþáttum með grunnupplýsingum, 
-fylki af flokkum, fylki af seasons, meðal einkunn sjónvarpsþáttar, 
-fjölda einkunna sem hafa verið skráðar fyrir sjónvarpsþátt */
-
-router.get('/tv', async (req, res, next) => {
+router.get('/tv', async (req, res) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
   limit = Number(limit);
@@ -113,7 +109,7 @@ async function validationCheckTVShow(req, res, next) {
     return res.json({ errors: validation.errors });
   }
 
-  next();
+  return next();
 }
 
 router.post(
@@ -123,7 +119,7 @@ router.post(
   xssSanitizationTVShow,
   catchErrors(validationCheckTVShow),
 
-  async (req, res, next) => {
+  async (req, res) => {
     const {
       title,
       first_aired,
@@ -158,3 +154,12 @@ router.post(
     return res.json(result);
   },
 );
+
+router.get('/tv/:id/season', async (req, res) => {
+  const { offset = 0, limit = 10 } = req.query;
+  const { id } = req.params;
+  console.log('id :>> ', id);
+  const seasons = await query(`SELECT title FROM seasons WHERE show = ${id}`);
+
+  return res.json(seasons.rows);
+});
