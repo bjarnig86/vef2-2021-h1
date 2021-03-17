@@ -121,6 +121,11 @@ const validationMiddlewareTVShowPatch = [
     .isNumeric().withMessage('id þarf að vera tala'),
 ];
 
+const validationMiddlewareId = [
+  param('id')
+    .isNumeric().withMessage('id þarf að vera tala'),
+];
+
 const xssSanitizationTVShow = [
   body('title').customSanitizer((v) => xss(v)),
   body('first_aired').customSanitizer((v) => xss(v)),
@@ -134,6 +139,10 @@ const xssSanitizationTVShow = [
   body('id').customSanitizer((v) => xss(v)),
 ];
 
+const xssSanitizationId = [
+  param('id').customSanitizer((v) => xss(v)),
+];
+
 async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
   // console.log('validation :>> ', validation);
@@ -144,6 +153,18 @@ async function validationCheckTVShow(req, res, next) {
 
   return next();
 }
+
+async function validationCheck(req, res, next) {
+  const validation = validationResult(req);
+  // console.log('validation :>> ', validation);
+
+  if (!validation.isEmpty()) {
+    return res.json({ errors: validation.errors });
+  }
+
+  return next();
+}
+
 
 router.post(
   '/tv',
@@ -251,7 +272,6 @@ router.patch(
   xssSanitizationTVShow,
   catchErrors(validationCheckTVShow),
 
-  
   async (req, res, next) => {
     const {
       title,
@@ -281,9 +301,6 @@ router.patch(
       id,
     ];
 
-  // console.log(`tvRouting.js: /tv/:id PATCH showData --> ${showData}`);
-  
-
     const q = `UPDATE shows
       SET 
         title = $1,
@@ -301,5 +318,22 @@ router.patch(
     const result = await query(q, showData);
 
     return res.json(result.rows[0]);
+  },
+);
+
+/**
+ * /tv/:id DELETE,
+ * eyðir sjónvarpsþátt, aðeins ef notandi er stjórnandi
+ */
+router.delete(
+  '/tv/:id',
+  requireAdminAuthentication,
+  validationMiddlewareId,
+  xssSanitizationId,
+  catchErrors(validationCheck),
+
+  async (req, res, next) => {
+    const result = await query(`DELETE FROM shows WHERE id = ${req.params.id}`);
+    return res.json(result);
   },
 );
