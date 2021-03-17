@@ -164,7 +164,7 @@ router.get('/tv/:id/season/:season',
   catchErrors(validationCheck),
 
   async (req, res) => {
-    console.log(`tvSeason.js: /tv/:id/season/:season GET req.url --> ${JSON.stringify(req.url)}`);
+    // console.log(`tvSeason.js: /tv/:id/season/:season GET req.url --> ${JSON.stringify(req.url)}`);
     console.log(`tvSeason.js: /tv/:id/season/:season GET req.params --> ${JSON.stringify(req.params)}`);
   
     let { offset = 0, limit = 10 } = req.query;
