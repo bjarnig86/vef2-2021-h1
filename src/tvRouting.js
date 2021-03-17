@@ -4,7 +4,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import xss from 'xss';
-import { body, validationResult } from 'express-validator';
+import { param, body, validationResult } from 'express-validator';
 import { query } from './db.js';
 
 import {
@@ -92,6 +92,34 @@ const validationMiddlewareTVShow = [
     .withMessage('Webpage má að hámarki vera 255 stafir'),
   body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
 ];
+const validationMiddlewareTVShowPatch = [
+  body('title')
+    .isLength({ min: 1 })
+    .withMessage('Titill þarf að vera amk 1 stafur'),
+  body('title')
+    .isLength({ max: 128 })
+    .withMessage('Titill má að hámarki vera 128 stafir'),
+  body('tagline')
+    .isLength({ max: 128 })
+    .withMessage('Tagline má að hámarki vera 128 stafir'),
+  body('description')
+    .isLength({ max: 400 })
+    .withMessage('Description má að hámarki vera 400 stafir'),
+  body('language')
+    .isLength({ max: 2 })
+    .withMessage('Language er táknað með tveimur bókstöfum'),
+  body('network')
+    .isLength({ max: 40 })
+    .withMessage('Network má að hámarki vera 40 stafir'),
+  body('webpage')
+    .isLength({ max: 255 })
+    .withMessage('Webpage má að hámarki vera 255 stafir'),
+  body('webpage')
+    .isURL()
+    .withMessage('Webpage þarf að vera á URL formi'),
+  param('id')
+    .isNumeric().withMessage('id þarf að vera tala'),
+];
 
 const xssSanitizationTVShow = [
   body('title').customSanitizer((v) => xss(v)),
@@ -103,11 +131,12 @@ const xssSanitizationTVShow = [
   body('language').customSanitizer((v) => xss(v)),
   body('network').customSanitizer((v) => xss(v)),
   body('webpage').customSanitizer((v) => xss(v)),
+  body('id').customSanitizer((v) => xss(v)),
 ];
 
 async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
-  //   console.log('validation :>> ', validation);
+  // console.log('validation :>> ', validation);
 
   if (!validation.isEmpty()) {
     return res.json({ errors: validation.errors });
@@ -159,6 +188,7 @@ router.post(
   },
 );
 
+
 /**
  * /tv/:id GET skilar
  * stöku sjónvarpsþáttum með grunnupplýsingum,
@@ -209,3 +239,67 @@ router.post(
 
   res.json(result);
 });
+
+/**
+ * /tv/:id PATCH,
+ * uppfærir sjónvarpsþátt, reit fyrir reit, aðeins ef notandi er stjórnandi
+ */
+router.patch(
+  '/tv/:id',
+  requireAdminAuthentication,
+  validationMiddlewareTVShowPatch,
+  xssSanitizationTVShow,
+  catchErrors(validationCheckTVShow),
+
+  
+  async (req, res, next) => {
+    const {
+      title,
+      first_aired,
+      in_production,
+      tagline,
+      image,
+      description,
+      language,
+      network,
+      webpage,
+    } = req.body;
+
+    const { id } = req.params;
+
+
+    const showData = [
+      title,
+      first_aired,
+      in_production,
+      tagline,
+      image,
+      description,
+      language,
+      network,
+      webpage,
+      id,
+    ];
+
+  // console.log(`tvRouting.js: /tv/:id PATCH showData --> ${showData}`);
+  
+
+    const q = `UPDATE shows
+      SET 
+        title = $1,
+        first_aired = $2,
+        in_production = $3,
+        tagline = $4,
+        image = $5,
+        description = $6,
+        language = $7,
+        network = $8,
+        webpage = $9
+      WHERE id = $10
+      RETURNING *`;
+
+    const result = await query(q, showData);
+
+    return res.json(result.rows[0]);
+  },
+);
