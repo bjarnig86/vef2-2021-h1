@@ -165,7 +165,7 @@ router.get('/tv/:id/season/:season',
 
   async (req, res) => {
     // console.log(`tvSeason.js: /tv/:id/season/:season GET req.url --> ${JSON.stringify(req.url)}`);
-    console.log(`tvSeason.js: /tv/:id/season/:season GET req.params --> ${JSON.stringify(req.params)}`);
+    // console.log(`tvSeason.js: /tv/:id/season/:season GET req.params --> ${JSON.stringify(req.params)}`);
   
     let { offset = 0, limit = 10 } = req.query;
     offset = Number(offset);
@@ -182,33 +182,32 @@ router.get('/tv/:id/season/:season',
       OFFSET $3
       LIMIT $4;`;
 
-    const episodes = await query(qEpisodes, [req.params.id, offset, limit]);
+    const episodes = await query(qEpisodes, [req.params.id, req.params.season, offset, limit]);
 
     const result = {
       limit,
       offset,
-      items: seasons.rows,
+      season: season.rows[0],
+      items: episodes.rows,
       links: {
         self: {
           href: `/?offset=${offset}&limit=${limit}`,
         },
       },
     };
-    // console.log(`tvRouting.js: /tv/:id/season seasons.rows.length --> ${seasons.rows.length}`);
-    // console.log(`tvRouting.js: /tv/:id/season limit --> ${limit}`);
-
+    
     if (offset > 0) {
       result.links.prev = {
         href: `/?offset=${offset - limit}&limit=${limit}`,
       };
     }
 
-    if (seasons.rows.length === limit) {
+    if (episodes.rows.length === limit) {
       result.links.next = {
         href: `/?offset=${Number(offset) + limit}&limit=${limit}`,
       };
     }
 
-    res.json('Hello World');
+    res.json(result);
   },
 );
