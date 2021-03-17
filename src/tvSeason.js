@@ -5,7 +5,9 @@ import { param, body, validationResult } from 'express-validator';
 import { query } from './db.js';
 import {
   validationMiddlewareId,
+  validationMiddlewareParamSeason,
   xssSanitizationId,
+  xssSanitizationParamSeason,
   validationCheck,
   catchErrors,
 } from './utils.js';
@@ -160,7 +162,9 @@ router.post('/tv/:id/season',
  */
 router.get('/tv/:id/season/:season',
   validationMiddlewareId,
+  validationMiddlewareParamSeason,
   xssSanitizationId,
+  xssSanitizationParamSeason,
   catchErrors(validationCheck),
 
   async (req, res) => {
@@ -195,7 +199,7 @@ router.get('/tv/:id/season/:season',
         },
       },
     };
-    
+
     if (offset > 0) {
       result.links.prev = {
         href: `/?offset=${offset - limit}&limit=${limit}`,
@@ -209,5 +213,24 @@ router.get('/tv/:id/season/:season',
     }
 
     res.json(result);
+  },
+);
+
+/**
+ * /tv/:id/season/:season DELETE
+ * eyðir season, aðeins ef notandi er stjórnandi
+ */
+router.delete(
+  '/tv/:id/season/:season',
+  requireAdminAuthentication,
+  validationMiddlewareId,
+  validationMiddlewareParamSeason,
+  xssSanitizationId,
+  xssSanitizationParamSeason,
+  catchErrors(validationCheck),
+
+  async (req, res) => {
+    const result = await query(`DELETE FROM seasons WHERE show = ${req.params.id} AND number = ${req.params.season} `);
+    return res.json(result);
   },
 );
