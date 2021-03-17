@@ -50,6 +50,8 @@ Keyrir node skipanir á Heroku: --> `heroku run` + `<skipun>`
 
 Keyrir logga á Heroku: --> `heroku logs -t`
 
+Opna pqweb (Halli): --> `pgweb --url postgres://postgres:postgres@localhost/vef2-h1`
+
 
 ### Git vinnuhringur
 1. Færa sig yfir á main til að sækja nýjasta: --> `git checkout main`

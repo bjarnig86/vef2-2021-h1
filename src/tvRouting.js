@@ -209,7 +209,6 @@ router.post(
   },
 );
 
-
 /**
  * /tv/:id GET skilar
  * stöku sjónvarpsþáttum með grunnupplýsingum,
@@ -220,12 +219,7 @@ router.post(
  * rating notanda,
  * staða notanda
  */
- router.get('/tv/:id', requireAuthentication, async (req, res, next) => {
-  // console.log(`tvRouting.js: /tv/:id req.params.id --> ${req.params.id}`);
-  // console.log(`tvRouting.js: /tv/:id req.user.admin --> ${req.user.admin}`);
-  // console.log(`tvRouting.js: /tv/:id req.user.id --> ${req.user.id}`);
-
-  
+router.get('/tv/:id', requireAuthentication, async (req, res, next) => {
   const getShow = 'SELECT row_to_json (shows) FROM shows WHERE id = $1';
   const show = await query(getShow, [req.params.id]);
 
@@ -337,3 +331,58 @@ router.delete(
     return res.json(result);
   },
 );
+
+/**
+ * skilar fylki af öllum seasons fyrir sjónvarpsþátt
+ *
+ * @name /tv/:id/season GET
+ * @function
+ * @param {*} req Beiðni
+ * @param {*} res Svar
+ */
+router.get('/tv/:id/season',
+  validationMiddlewareId,
+  xssSanitizationId,
+  catchErrors(validationCheck),
+
+  async (req, res, next) => {
+    let { offset = 0, limit = 10 } = req.query;
+    offset = Number(offset);
+    limit = Number(limit);
+
+    const q = `SELECT * FROM seasons
+      WHERE show = $1
+      ORDER BY number ASC
+      OFFSET $2
+      LIMIT $3`;
+
+    const seasons = await query(q, [req.params.id, offset, limit]);
+
+    const result = {
+      limit,
+      offset,
+      items: seasons.rows,
+      links: {
+        self: {
+          href: `/?offset=${offset}&limit=${limit}`,
+        },
+      },
+    };
+
+    // console.log(`tvRouting.js: /tv/:id/season seasons.rows.length --> ${seasons.rows.length}`);
+    // console.log(`tvRouting.js: /tv/:id/season limit --> ${limit}`);
+
+    if (offset > 0) {
+      result.links.prev = {
+        href: `/?offset=${offset - limit}&limit=${limit}`,
+      };
+    }
+
+    if (seasons.rows.length === limit) {
+      result.links.next = {
+        href: `/?offset=${Number(offset) + limit}&limit=${limit}`,
+      };
+    }
+
+    res.json(result);
+  });
