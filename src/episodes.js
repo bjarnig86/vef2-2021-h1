@@ -73,24 +73,16 @@ router.post(
   xssSanitizationEpisode,
   catchErrors(validationCheckEpisode),
   async (req, res) => {
-    const { title, number, first_aired, description, season, show } = req.body;
+    const { title, number, first_aired, description } = req.body;
 
-    const id = req.params.season;
+    const { show, season } = req.params;
 
-    const episodeData = [
-      id,
-      title,
-      number,
-      first_aired,
-      description,
-      season,
-      show,
-    ];
+    const episodeData = [title, number, first_aired, description, season, show];
 
     const q = `INSERT INTO episodes
-    (id, title, number, first_aired, description, season, show)
+    (title, number, first_aired, description, season, show)
     VALUES
-    ($1, $2, $3, $4, $5, $6, $7)`;
+    ($1, $2, $3, $4, $5, $6)`;
 
     const result = await query(q, episodeData);
 

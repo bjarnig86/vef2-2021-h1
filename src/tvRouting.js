@@ -4,8 +4,9 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import xss from 'xss';
-import { body, validationResult } from 'express-validator';
+import { body, param, validationResult } from 'express-validator';
 import { query } from './db.js';
+import { validationCheck } from './utils.js';
 
 import {
   requireAdminAuthentication,
