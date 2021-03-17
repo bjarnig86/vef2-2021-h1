@@ -114,6 +114,7 @@ router.post('/users/login', async (req, res) => {
 });
 
 router.get('/users', requireAdminAuthentication, async (req, res) => {
+  console.log('requireAdminAuthentication :>> ');
   const allusers = await query('SELECT * FROM users');
   const users = [];
   allusers.rows.map((row) => {
