@@ -55,11 +55,9 @@ router.get('/tv', async (req, res, next) => {
     result.links.prev = {
       href: `/?offset=${offset - limit}&limit=${limit}`,
     };
-  } else {
-    result.links.prev = { href: '' };
   }
 
-  if (allShows.rows.length <= limit) {
+  if (allShows.rows.length === limit) {
     result.links.next = {
       href: `/?offset=${Number(offset) + limit}&limit=${limit}`,
     };
@@ -126,6 +124,28 @@ const validationMiddlewareId = [
     .isNumeric().withMessage('id þarf að vera tala'),
 ];
 
+const validationMiddlewareSeason = [
+  body('title')
+    .isLength({ min: 1 })
+    .withMessage('Titill þarf að vera amk 1 stafur'),
+  body('title')
+    .isLength({ max: 128 })
+    .withMessage('Titill má að hámarki vera 128 stafir'),
+  body('number')
+    .isNumeric()
+    .withMessage('Fjöldi þarf að vera tala'),
+  body('first_aired')
+    .isDate()
+    .withMessage('Fyrst birt þarf að vera dagsetning'),
+  body('description')
+    .isLength({ max: 400 })
+    .withMessage('Description má að hámarki vera 400 stafir'),
+  body('poster')
+    .isLength({ max: 255 })
+    .withMessage('Mynd má að hámarki vera 255 stafir'),
+  body('poster').isURL().withMessage('Mynd þarf að vera á URL formi'),
+];
+
 const xssSanitizationTVShow = [
   body('title').customSanitizer((v) => xss(v)),
   body('first_aired').customSanitizer((v) => xss(v)),
@@ -137,6 +157,14 @@ const xssSanitizationTVShow = [
   body('network').customSanitizer((v) => xss(v)),
   body('webpage').customSanitizer((v) => xss(v)),
   body('id').customSanitizer((v) => xss(v)),
+];
+
+const xssSanitizationSeason = [
+  body('title').customSanitizer((v) => xss(v)),
+  body('number').customSanitizer((v) => xss(v)),
+  body('first_aired').customSanitizer((v) => xss(v)),
+  body('description').customSanitizer((v) => xss(v)),
+  body('poster').customSanitizer((v) => xss(v)),
 ];
 
 const xssSanitizationId = [
@@ -386,3 +414,53 @@ router.get('/tv/:id/season',
 
     res.json(result);
   });
+
+/**
+ * /tv/:id/season POST
+ * Býr til nýtt í season í sjónvarpþætti,
+ * aðeins ef notandi er stjórnandi
+ */
+router.post(
+  '/tv/:id/season',
+  requireAdminAuthentication,
+  validationMiddlewareId,
+  validationMiddlewareSeason,
+  xssSanitizationId,
+  xssSanitizationSeason,
+  catchErrors(validationCheck),
+
+  async (req, res, next) => {
+    console.log(`tvRouting.js: /tv/:id/season post req.body --> ${req.body}`);
+    const {
+      title,
+      number,
+      first_aired,
+      description,
+      poster,
+    } = req.body;
+
+    const seasonData = [
+      title,
+      number,
+      first_aired,
+      description,
+      poster,
+      req.params.id,
+    ];
+
+    console.log(`tvRouting.js: /tv/:id/season post seasonData --> ${seasonData}`);
+  
+    const q = `INSERT INTO seasons (
+      title,
+      number,
+      first_aired,
+      description,
+      poster,
+      show)
+      VALUES ($1,$2,$3,$4,$5,$6)`;
+
+    const result = await query(q, seasonData);
+
+    return res.json(result);
+  },
+);
