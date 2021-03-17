@@ -47,7 +47,7 @@ CREATE TABLE seasons (
   first_aired date,
   description text,
   poster varchar(255) NOT NULL,
-  show integer REFERENCES shows(id),
+  show integer REFERENCES shows(id) ON DELETE CASCADE,
   PRIMARY KEY (show, number)
 );
 
@@ -60,7 +60,7 @@ CREATE TABLE episodes (
   description text,
   season integer,
   show integer,
-  FOREIGN KEY(show, season) REFERENCES seasons
+  FOREIGN KEY(show, season) REFERENCES seasons ON DELETE CASCADE
 );
 
 
@@ -68,7 +68,7 @@ CREATE TABLE shows_genres (
   id SERIAL PRIMARY KEY,
   show INTEGER NOT NULL,
   genre INTEGER NOT NULL,
-  CONSTRAINT show FOREIGN KEY (show) REFERENCES shows (id),
+  CONSTRAINT show FOREIGN KEY (show) REFERENCES shows (id) ON DELETE CASCADE,
   CONSTRAINT genre FOREIGN KEY (genre) REFERENCES genres (id)
 );
 

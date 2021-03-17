@@ -27,8 +27,11 @@ Starta postgres server locally á Windows tölvu:
 Setja töflur í gagnagrunn:
 --> `npm run setup`
 
-Keyra gög inn í gagnagrunn:
+Keyra gögn inn í gagnagrunn:
 --> `npm run import`
+
+Uppfæra jsdoc:
+--> `npm run jsdoc`
 
 Keyra eslint á js skjöl og Stylelint á scss skjöl: --> `npm test`
 
@@ -46,6 +49,8 @@ Pushar yfir á Heroku: --> `gp heroku`
 Keyrir node skipanir á Heroku: --> `heroku run` + `<skipun>`
 
 Keyrir logga á Heroku: --> `heroku logs -t`
+
+Opna pqweb (Halli): --> `pgweb --url postgres://postgres:postgres@localhost/vef2-h1`
 
 
 ### Git vinnuhringur

@@ -6,7 +6,10 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
 
 import {
-  comparePasswords, findByUsername, findById, registerUser,
+  comparePasswords,
+  findByUsername,
+  findById,
+  registerUser,
 } from './users.js';
 import { query } from './db.js';
 
@@ -15,13 +18,11 @@ dotenv.config();
 export const router = express.Router();
 
 const {
-  PORT: port = 3000,
   JWT_SECRET: jwtSecret,
-  TOKEN_LIFETIME: tokenLifetime = 120,
-  DATABASE_URL: databaseUrl,
+  TOKEN_LIFETIME: tokenLifetime = 1200,
 } = process.env;
 
-if (!jwtSecret || !databaseUrl) {
+if (!jwtSecret) {
   console.error('Vantar .env gildi');
   process.exit(1);
 }
@@ -49,7 +50,6 @@ passport.use(new Strategy(jwtOptions, strat));
 router.use(passport.initialize());
 
 export function requireAuthentication(req, res, next) {
-
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (err) {
       return next(err);
@@ -68,10 +68,8 @@ export function requireAuthentication(req, res, next) {
   })(req, res, next);
 }
 
-
 export function requireAdminAuthentication(req, res, next) {
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
-
     if (err) {
       return next(err);
     }
@@ -92,9 +90,11 @@ export function requireAdminAuthentication(req, res, next) {
   })(req, res, next);
 }
 
+/**
+ * Skráir notanda inn.
+ */
 router.post('/users/login', async (req, res) => {
   const { username, password = '' } = req.body;
-  // console.log(`usercontrol.js router.post('/users/login') -> req.header: ${}`);
   const user = await findByUsername(username);
 
   if (!user) {
@@ -114,8 +114,7 @@ router.post('/users/login', async (req, res) => {
 });
 
 router.get('/users', requireAdminAuthentication, async (req, res) => {
-  console.log(`usercontrol.js router.post('/users') -> req: ${req}`);
-  
+  console.log('requireAdminAuthentication :>> ');
   const allusers = await query('SELECT * FROM users');
   const users = [];
   allusers.rows.map((row) => {
@@ -132,7 +131,6 @@ router.get('/users/me', requireAuthentication, async (req, res) => {
 });
 
 router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
-  console.log(`usercontrol.js router.post('/users/:id') -> req: ${req}`);
   const params = req.params;
   const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
   const user = {
@@ -145,7 +143,6 @@ router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
 });
 
 router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
-  console.log(`usercontrol.js router.patch('/users/:id') -> req: ${req}`);
   const params = req.params;
   const body = req.body;
   const currentUser = req.user;
@@ -162,27 +159,24 @@ router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
     return res.json({ error: 'User already is admin' });
   } else {
     // Breyting á user
-    const changeUser = await query(
-      `UPDATE users SET admin = true WHERE id = ${params.id}`
-    );
+    await query(`UPDATE users SET admin = true WHERE id = ${params.id}`);
 
     return res.json({ status: 'User is now admin' });
   }
 });
 
+/**
+ * Skráir nýjan notanda í gagnagrunn.
+ */
 router.post('/users/register', async (req, res) => {
   const { username, email, password = '' } = req.body;
-  // console.log(`usercontrol.js router.post('/users/login') -> req.header: ${}`);
   const user = await findByUsername(username);
-
 
   if (user) {
     return res.status(401).json({ error: 'User already registered' });
   }
 
   const id = registerUser(username, email, password);
-
-  // const passwordIsCorrect = await comparePasswords(password, user.password);
 
   if (id) {
     const payload = { id };

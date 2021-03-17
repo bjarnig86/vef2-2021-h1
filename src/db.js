@@ -30,15 +30,22 @@ pool.on('error', (err) => {
  * @param {String} _query Strengur með beiðni í gagnagrunn
  * @param {Array} values Gögn sem sett eru í strenginn.
  */
-export async function query(_query, values = []) {
+export async function query(q, values = []) {
   const client = await pool.connect();
 
+  let result;
+
   try {
-    const result = await client.query(_query, values);
-    return result;
+    result = await client.query(q, values);
+  } catch (err) {
+    console.error('Villa í query', err);
+    return err;
   } finally {
     client.release();
+    
   }
+
+  return result;
 }
 
 // Helper to remove pg from the event loop

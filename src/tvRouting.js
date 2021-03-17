@@ -157,6 +157,7 @@ router.post(
 
 router.get('/tv/:id/season', async (req, res) => {
   const { offset = 0, limit = 10 } = req.query;
+
   const { id } = req.params;
   console.log('id :>> ', id);
   const seasons = await query(`SELECT title FROM seasons WHERE show = ${id}`);

@@ -1,0 +1,14 @@
+{
+    "source": {
+        "include": "./src", 
+        "includePattern": ".js",
+        "excludePattern": ".json"
+        },
+    "opts": {
+        "encoding": "utf8",
+        "readme": "./readme.md",
+        "recurse": "true",
+        "verbose": "true"
+    }
+    
+}
