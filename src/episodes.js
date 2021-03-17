@@ -67,7 +67,7 @@ function validationCheckEpisode(req, res, next) {
 }
 
 router.post(
-  '/tv/:id/season/:id/episode/',
+  '/tv/:id/season/:season/episode/',
   requireAdminAuthentication,
   validationEpisode,
   xssSanitizationEpisode,
@@ -75,7 +75,7 @@ router.post(
   async (req, res) => {
     const { title, number, first_aired, description, season, show } = req.body;
 
-    const { id } = req.params;
+    const id = req.params.season;
 
     const episodeData = [
       id,
