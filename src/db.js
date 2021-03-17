@@ -39,9 +39,10 @@ export async function query(q, values = []) {
     result = await client.query(q, values);
   } catch (err) {
     console.error('Villa í query', err);
-    throw err;
+    return err;
   } finally {
     client.release();
+    
   }
 
   return result;
