@@ -4,13 +4,15 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import xss from 'xss';
-import { param, body, validationResult } from 'express-validator';
+import { body, param, validationResult } from 'express-validator';
 import { query } from './db.js';
+import { validationCheck } from './utils.js';
 
 import {
   isLoggedIn,
   requireAdminAuthentication,
   requireAuthentication,
+  isLoggedIn,
 } from './usercontrol.js';
 
 export const router = express.Router();
@@ -27,19 +29,24 @@ function catchErrors(fn) {
   return (req, res, next) => fn(req, res, next).catch(next);
 }
 
+
 /* get á /tv - `GET` skilar síðum af sjónvarpsþáttum með grunnupplýsingum, 
 fylki af flokkum, fylki af seasons, meðal einkunn sjónvarpsþáttar, 
 fjölda einkunna sem hafa verið skráðar fyrir sjónvarpsþátt */
-
-router.get('/tv', isLoggedIn, async (req, res, next) => {
+router.get('/tv', isLoggedIn, async (req, res) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
   limit = Number(limit);
+
+  const { user } = req;
+  console.log('user :>> ', user);
 
   const allShows = await query(
     'SELECT * FROM shows ORDER BY id ASC OFFSET $1 LIMIT $2',
     [offset, limit]
   );
+
+  const url = req.protocol + '://' + req.headers.host + req.originalUrl;
 
   const result = {
     limit,
@@ -47,20 +54,22 @@ router.get('/tv', isLoggedIn, async (req, res, next) => {
     items: allShows.rows,
     links: {
       self: {
-        href: `/?offset=${offset}&limit=${limit}`,
+        href: `${url}?offset=${offset}&limit=${limit}`,
       },
     },
   };
 
   if (offset > 0) {
     result.links.prev = {
-      href: `/?offset=${offset - limit}&limit=${limit}`,
+      href: `${url}?offset=${offset - limit}&limit=${limit}`,
     };
+  } else {
+    result.links.prev = { href: '' };
   }
 
-  if (allShows.rows.length === limit) {
+  if (allShows.rows.length <= limit) {
     result.links.next = {
-      href: `/?offset=${Number(offset) + limit}&limit=${limit}`,
+      href: `${url}?offset=${Number(offset) + limit}&limit=${limit}`,
     };
   }
 
@@ -91,6 +100,7 @@ const validationMiddlewareTVShow = [
     .withMessage('Webpage má að hámarki vera 255 stafir'),
   body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
 ];
+
 const validationMiddlewareTVShowPatch = [
   body('title')
     .isLength({ min: 1 })
@@ -138,18 +148,7 @@ const xssSanitizationId = [param('id').customSanitizer((v) => xss(v))];
 
 async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
-  // console.log('validation :>> ', validation);
-
-  if (!validation.isEmpty()) {
-    return res.json({ errors: validation.errors });
-  }
-
-  return next();
-}
-
-async function validationCheck(req, res, next) {
-  const validation = validationResult(req);
-  // console.log('validation :>> ', validation);
+  //   console.log('validation :>> ', validation);
 
   if (!validation.isEmpty()) {
     return res.json({ errors: validation.errors });
@@ -165,7 +164,7 @@ router.post(
   xssSanitizationTVShow,
   catchErrors(validationCheckTVShow),
 
-  async (req, res, next) => {
+  async (req, res) => {
     const {
       title,
       first_aired,
@@ -215,6 +214,7 @@ router.get('/tv/:id', requireAuthentication, async (req, res) => {
   const getShow = 'SELECT row_to_json (shows) FROM shows WHERE id = $1';
   const show = await query(getShow, [req.params.id]);
 
+
   const getUserShow = 'SELECT * FROM users_shows WHERE show = $1';
   const userShow = await query(getUserShow, [req.params.id]);
 
@@ -229,24 +229,7 @@ router.get('/tv/:id', requireAuthentication, async (req, res) => {
   const getSeasons = 'SELECT * FROM seasons WHERE show = $1;';
   const showSeasons = await query(getSeasons, [req.params.id]);
 
-  let showRatingTotal = 0;
-  userShow.rows.forEach((element) => {
-    showRatingTotal += element.rating;
-  });
-
-  const result = {
-    show: show.rows[0].row_to_json,
-    showRatings: {
-      showRatingAverage: showRatingTotal / userShow.rows.length,
-      showRatingCount: userShow.rows.length,
-      userRating: userRating.rows[0].rating,
-    },
-    showGenres: showGenres.rows[0].json_agg,
-    showSeasons: showSeasons.rows,
-    userAdminStatus: req.user.admin,
-  };
-
-  res.json(result);
+  return res.json(seasons.rows);
 });
 
 /**
