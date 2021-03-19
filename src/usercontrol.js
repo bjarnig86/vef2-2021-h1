@@ -90,6 +90,30 @@ export function requireAdminAuthentication(req, res, next) {
   })(req, res, next);
 }
 
+export function isLoggedIn(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth) {
+    return next();
+  }
+  console.log('AUTH --> ', auth);
+  return passport.authenticate('jwt', { session: false }, (err, user, info) => {
+    if (info) {
+      return false;
+    }
+    if (err) {
+      return false;
+    }
+
+    if (!user) {
+      return false;
+    }
+
+    // Látum notanda vera aðgengilegan í rest af middlewares
+    req.user = user;
+    return next();
+  })(req, res, next);
+}
+
 /**
  * Skráir notanda inn.
  */

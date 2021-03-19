@@ -11,6 +11,7 @@ import { validationCheck } from './utils.js';
 import {
   requireAdminAuthentication,
   requireAuthentication,
+  isLoggedIn,
 } from './usercontrol.js';
 
 export const router = express.Router();
@@ -27,15 +28,20 @@ function catchErrors(fn) {
   return (req, res, next) => fn(req, res, next).catch(next);
 }
 
-router.get('/tv', async (req, res) => {
+router.get('/tv', isLoggedIn, async (req, res) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
   limit = Number(limit);
+
+  const { user } = req;
+  console.log('user :>> ', user);
 
   const allShows = await query(
     'SELECT * FROM shows ORDER BY id ASC OFFSET $1 LIMIT $2',
     [offset, limit],
   );
+
+  const url = req.protocol + '://' + req.headers.host + req.originalUrl;
 
   const result = {
     limit,
@@ -43,14 +49,14 @@ router.get('/tv', async (req, res) => {
     items: allShows.rows,
     links: {
       self: {
-        href: `/?offset=${offset}&limit=${limit}`,
+        href: `${url}?offset=${offset}&limit=${limit}`,
       },
     },
   };
 
   if (offset > 0) {
     result.links.prev = {
-      href: `/?offset=${offset - limit}&limit=${limit}`,
+      href: `${url}?offset=${offset - limit}&limit=${limit}`,
     };
   } else {
     result.links.prev = { href: '' };
@@ -58,7 +64,7 @@ router.get('/tv', async (req, res) => {
 
   if (allShows.rows.length <= limit) {
     result.links.next = {
-      href: `/?offset=${Number(offset) + limit}&limit=${limit}`,
+      href: `${url}?offset=${Number(offset) + limit}&limit=${limit}`,
     };
   }
 

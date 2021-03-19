@@ -29,21 +29,21 @@ function catchErrors(fn) {
 }
 
 const validationEpisode = [
-  body('id').isNumeric().withMessage('id þarf að vera tala'),
+  //   body('id').isNumeric().withMessage('id þarf að vera tala'),
   body('title')
     .isLength({ max: 255 })
     .withMessage('Nafn þáttar má að hámarki vera 255 stafir'),
   body('number')
     .isLength({ max: 10 })
     .withMessage('Númer þáttar má að hámarki vera 10 stafa tala'),
-  body('first_aired')
-    .isDate()
-    .withMessage('Dagsetning þarf að vera á réttu formi'),
+  //   body('first_aired')
+  //     .isDate()
+  //     .withMessage('Dagsetning þarf að vera á réttu formi'),
   body('description')
     .isLength({ max: 400 })
     .withMessage('Description má að hámarki vera 400 stafir'),
-  body('season').isNumeric().withMessage('Season þarf að vera tala'),
-  body('show').isNumeric().withMessage('Show þarf að vera tala'),
+  //   body('season').isNumeric().withMessage('Season þarf að vera tala'),
+  //   body('show').isNumeric().withMessage('Show þarf að vera tala'),
 ];
 
 const xssSanitizationEpisode = [
@@ -56,7 +56,7 @@ const xssSanitizationEpisode = [
   body('show').customSanitizer((v) => xss(v)),
 ];
 
-function validationCheckEpisode(req, res, next) {
+async function validationCheckEpisode(req, res, next) {
   const validation = validationResult(req);
 
   if (!validation.isEmpty()) {
@@ -75,17 +75,66 @@ router.post(
   async (req, res) => {
     const { title, number, first_aired, description } = req.body;
 
-    const { show, season } = req.params;
+    const { id, season } = req.params;
 
+    const show = id;
     const episodeData = [title, number, first_aired, description, season, show];
 
     const q = `INSERT INTO episodes
     (title, number, first_aired, description, season, show)
     VALUES
-    ($1, $2, $3, $4, $5, $6)`;
+    ($1, $2, $3, $4, $5, $6)
+    RETURNING *;`;
 
     const result = await query(q, episodeData);
 
     return res.json(result);
   },
 );
+
+router.get('/tv/:id/season/:season/episode/:episode', async (req, res) => {
+  let { offset = 0, limit = 10 } = req.query;
+  offset = Number(offset);
+  limit = Number(limit);
+
+  const url = req.protocol + '://' + req.headers.host + req.originalUrl;
+  console.log('url :>> ', url);
+
+  const q = `SELECT * FROM episodes
+    WHERE show = $1 AND season = $2 AND id  
+    ORDER BY number ASC
+    OFFSET $3 LIMIT $4
+    RETURNING *;`;
+
+  const episodes = await query(q, [
+    req.params.id,
+    req.params.season,
+    offset,
+    limit,
+  ]);
+
+  const result = {
+    limit,
+    offset,
+    items: episodes.rows,
+    links: {
+      self: {
+        href: `${url}?offset=${offset}&limit=${limit}`,
+      },
+    },
+  };
+
+  if (offset > 0) {
+    result.links.prev = {
+      href: `${url}?offset=${offset - limit}&limit=${limit}`,
+    };
+  }
+
+  if (episodes.rows.length === limit) {
+    result.links.next = {
+      href: `${url}?offset=${Number(offset) + limit}&limit=${limit}`,
+    };
+  }
+
+  res.json(result);
+});
