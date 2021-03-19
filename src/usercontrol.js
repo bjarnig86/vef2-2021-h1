@@ -4,12 +4,14 @@ import passport from 'passport';
 import dotenv from 'dotenv';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
+import { body, validationResult } from 'express-validator';
 
 import {
   comparePasswords,
   findByUsername,
   findById,
   registerUser,
+  hashPassword,
 } from './users.js';
 import { query } from './db.js';
 
@@ -19,6 +21,7 @@ export const router = express.Router();
 
 const {
   JWT_SECRET: jwtSecret,
+
   TOKEN_LIFETIME: tokenLifetime = 1200,
 } = process.env;
 
@@ -149,9 +152,36 @@ router.get('/users', requireAdminAuthentication, async (req, res) => {
 });
 
 router.get('/users/me', requireAuthentication, async (req, res) => {
+  if (req.method === 'PATCH') {
+    next();
+  }
   const { id, username, email } = req.user;
   const user = { id: id, username: username, email: email };
   return res.json(user);
+});
+
+router.patch('/users/me', requireAuthentication, async (req, res) => {
+  const { id } = req.user;
+  const { email, password } = req.body;
+
+  if (email !== undefined && password !== undefined) {
+    const hashedPassword = await hashPassword(password);
+    await query(
+      `UPDATE users SET (email, password) = ('${email}', '${hashedPassword}') WHERE id = ${id}`
+    );
+    res.json({ message: 'User has been updated' });
+  } else if (email) {
+    await query(`UPDATE users SET email = '${email}' WHERE id = ${id}`);
+    res.json({ message: 'User has been updated' });
+  } else if (password) {
+    const hashedPassword = await hashPassword(password);
+    await query(
+      `UPDATE users SET password = '${hashedPassword}' WHERE id = ${id}`
+    );
+    res.json({ message: 'User has been updated' });
+  } else {
+    res.json({ error: 'no input' });
+  }
 });
 
 router.get('/users/:id', requireAdminAuthentication, async (req, res) => {

@@ -9,6 +9,7 @@ import { query } from './db.js';
 import { validationCheck } from './utils.js';
 
 import {
+  isLoggedIn,
   requireAdminAuthentication,
   requireAuthentication,
   isLoggedIn,
@@ -28,6 +29,10 @@ function catchErrors(fn) {
   return (req, res, next) => fn(req, res, next).catch(next);
 }
 
+
+/* get á /tv - `GET` skilar síðum af sjónvarpsþáttum með grunnupplýsingum, 
+fylki af flokkum, fylki af seasons, meðal einkunn sjónvarpsþáttar, 
+fjölda einkunna sem hafa verið skráðar fyrir sjónvarpsþátt */
 router.get('/tv', isLoggedIn, async (req, res) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
@@ -38,7 +43,7 @@ router.get('/tv', isLoggedIn, async (req, res) => {
 
   const allShows = await query(
     'SELECT * FROM shows ORDER BY id ASC OFFSET $1 LIMIT $2',
-    [offset, limit],
+    [offset, limit]
   );
 
   const url = req.protocol + '://' + req.headers.host + req.originalUrl;
@@ -192,7 +197,7 @@ router.post(
     const result = await query(q, showData);
 
     return res.json(result);
-  },
+  }
 );
 
 /**
@@ -209,9 +214,20 @@ router.get('/tv/:id', requireAuthentication, async (req, res) => {
   const getShow = 'SELECT row_to_json (shows) FROM shows WHERE id = $1';
   const show = await query(getShow, [req.params.id]);
 
-  const { id } = req.params;
-  console.log('id :>> ', id);
-  const seasons = await query(`SELECT title FROM seasons WHERE show = ${id}`);
+
+  const getUserShow = 'SELECT * FROM users_shows WHERE show = $1';
+  const userShow = await query(getUserShow, [req.params.id]);
+
+  const getUserRating =
+    'SELECT rating FROM users_shows WHERE "user" = $1 AND show = $2';
+  const userRating = await query(getUserRating, [req.user.id, req.params.id]);
+
+  const getGenres =
+    'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
+  const showGenres = await query(getGenres, [req.params.id]);
+
+  const getSeasons = 'SELECT * FROM seasons WHERE show = $1;';
+  const showSeasons = await query(getSeasons, [req.params.id]);
 
   return res.json(seasons.rows);
 });
@@ -272,7 +288,7 @@ router.patch(
     const result = await query(q, showData);
 
     return res.json(result.rows[0]);
-  },
+  }
 );
 
 /**
@@ -289,5 +305,5 @@ router.delete(
   async (req, res, next) => {
     const result = await query(`DELETE FROM shows WHERE id = ${req.params.id}`);
     return res.json(result);
-  },
+  }
 );

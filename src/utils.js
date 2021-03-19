@@ -16,8 +16,17 @@ export const validationMiddlewareId = [
     .isNumeric().withMessage('id þarf að vera tala'),
 ];
 
+export const validationMiddlewareParamSeason = [
+  param('season')
+    .isNumeric().withMessage('season þarf að vera tala'),
+];
+
 export const xssSanitizationId = [
-  param('id').customSanitizer((v) => xss(v)),
+  param('season').customSanitizer((v) => xss(v)),
+];
+
+export const xssSanitizationParamSeason = [
+  param('season').customSanitizer((v) => xss(v)),
 ];
 
 export async function validationCheck(req, res, next) {
