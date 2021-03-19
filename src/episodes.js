@@ -93,48 +93,35 @@ router.post(
 );
 
 router.get('/tv/:id/season/:season/episode/:episode', async (req, res) => {
-  let { offset = 0, limit = 10 } = req.query;
-  offset = Number(offset);
-  limit = Number(limit);
-
-  const url = req.protocol + '://' + req.headers.host + req.originalUrl;
-  console.log('url :>> ', url);
-
   const q = `SELECT * FROM episodes
-    WHERE show = $1 AND season = $2 AND id  
-    ORDER BY number ASC
-    OFFSET $3 LIMIT $4
-    RETURNING *;`;
+    WHERE show = $1 AND season = $2 AND number = $3;`;
 
   const episodes = await query(q, [
     req.params.id,
     req.params.season,
-    offset,
-    limit,
+    req.params.episode,
   ]);
 
-  const result = {
-    limit,
-    offset,
-    items: episodes.rows,
-    links: {
-      self: {
-        href: `${url}?offset=${offset}&limit=${limit}`,
-      },
-    },
-  };
-
-  if (offset > 0) {
-    result.links.prev = {
-      href: `${url}?offset=${offset - limit}&limit=${limit}`,
-    };
-  }
-
-  if (episodes.rows.length === limit) {
-    result.links.next = {
-      href: `${url}?offset=${Number(offset) + limit}&limit=${limit}`,
-    };
-  }
-
-  res.json(result);
+  res.json(episodes.rows[0]);
 });
+
+router.delete(
+  '/tv/:id/season/:season/episode/:episode',
+  requireAdminAuthentication,
+  validationEpisode,
+  xssSanitizationEpisode,
+  catchErrors(validationCheckEpisode),
+
+  async (req, res) => {
+    const { season, episode } = req.params;
+    const show = req.params.id;
+
+    const result = await query(`DELETE FROM episodes WHERE 
+      show = ${show} AND 
+      season = ${season} AND 
+      number = ${episode}
+      RETURNING *;`);
+
+    res.json(result);
+  },
+);

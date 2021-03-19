@@ -12,13 +12,11 @@ export function catchErrors(fn) {
 }
 
 export const validationMiddlewareId = [
-  param('id')
-    .isNumeric().withMessage('id þarf að vera tala'),
+  param('id').isNumeric().withMessage('id þarf að vera tala'),
 ];
 
 export const validationMiddlewareParamSeason = [
-  param('season')
-    .isNumeric().withMessage('season þarf að vera tala'),
+  param('season').isNumeric().withMessage('season þarf að vera tala'),
 ];
 
 export const xssSanitizationId = [
