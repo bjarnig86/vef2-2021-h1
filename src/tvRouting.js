@@ -14,6 +14,10 @@ import {
   requireAuthentication,
 } from './usercontrol.js';
 
+dotenv.config();
+
+const { BASE_URL: baseUrl } = process.env;
+
 export const router = express.Router();
 
 router.use(express.json());
@@ -44,7 +48,8 @@ router.get('/tv', isLoggedIn, async (req, res) => {
     [offset, limit],
   );
 
-  const url = req.protocol + '://' + req.headers.host + req.originalUrl;
+  // const url = req.protocol + '://' + req.headers.host + req.originalUrl;
+  const { path } = req;
 
   const result = {
     limit,
@@ -52,22 +57,22 @@ router.get('/tv', isLoggedIn, async (req, res) => {
     items: allShows.rows,
     links: {
       self: {
-        href: `${url}?offset=${offset}&limit=${limit}`,
+        href: `${baseUrl}${path}?offset=${offset}&limit=${limit}`,
       },
     },
   };
 
   if (offset > 0) {
     result.links.prev = {
-      href: `${url}?offset=${offset - limit}&limit=${limit}`,
+      href: `${baseUrl}${path}?offset=${offset - limit}&limit=${limit}`,
     };
   } else {
     result.links.prev = { href: '' };
   }
 
-  if (allShows.rows.length <= limit) {
+  if (allShows.rows.length === limit) {
     result.links.next = {
-      href: `${url}?offset=${Number(offset) + limit}&limit=${limit}`,
+      href: `${baseUrl}${path}?offset=${Number(offset) + limit}&limit=${limit}`,
     };
   }
 

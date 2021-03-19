@@ -13,9 +13,9 @@
 - `/tv/:id/season/:id` <komið>
   - `GET` skilar stöku season fyrir þátt með grunnupplýsingum, fylki af þáttum <komið>
   - `DELETE`, eyðir season, aðeins ef notandi er stjórnandi <komið>
-- `/tv/:id/season/:id/episode/` <Bjarni>
+- `/tv/:id/season/:id/episode/` <komið>
   - `POST` býr til nýjan þátt í season, aðeins ef notandi er stjórnandi
-- `/tv/:id/season/:id/episode/:id` <>
+- `/tv/:id/season/:id/episode/:id` <Bjarni>
   - `GET` skilar upplýsingum um þátt
   - `DELETE`, eyðir þætti, aðeins ef notandi er stjórnandi
 - `/genres` <>

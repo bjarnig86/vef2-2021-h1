@@ -21,6 +21,10 @@ export const router = express.Router();
 
 router.use(express.json());
 
+dotenv.config();
+
+const { BASE_URL: baseUrl } = process.env;
+
 const xssSanitizationSeason = [
   body('title').customSanitizer((v) => xss(v)),
   body('number').customSanitizer((v) => xss(v)),
@@ -68,6 +72,8 @@ router.get(
     offset = Number(offset);
     limit = Number(limit);
 
+    const { path } = req;
+
     const q = `SELECT * FROM seasons
       WHERE show = $1
       ORDER BY number ASC
@@ -82,7 +88,7 @@ router.get(
       items: seasons.rows,
       links: {
         self: {
-          href: `/?offset=${offset}&limit=${limit}`,
+          href: `${baseUrl}${path}?offset=${offset}&limit=${limit}`,
         },
       },
     };
@@ -93,13 +99,15 @@ router.get(
 
     if (offset > 0) {
       result.links.prev = {
-        href: `/?offset=${offset - limit}&limit=${limit}`,
+        href: `${baseUrl}${path}?offset=${offset - limit}&limit=${limit}`,
       };
     }
 
     if (seasons.rows.length === limit) {
       result.links.next = {
-        href: `/?offset=${Number(offset) + limit}&limit=${limit}`,
+        href: `${baseUrl}${path}?offset=${
+          Number(offset) + limit
+        }&limit=${limit}`,
       };
     }
 
@@ -171,7 +179,8 @@ router.get(
     let { offset = 0, limit = 10 } = req.query;
     offset = Number(offset);
     limit = Number(limit);
-    const url = req.protocol + '://' + req.headers.host + req.originalUrl;
+
+    const { path } = req;
 
     const qSeason = `SELECT * FROM seasons
       WHERE show = $1 AND number = $2`;
@@ -198,20 +207,22 @@ router.get(
       items: episodes.rows,
       links: {
         self: {
-          href: `${url}?offset=${offset}&limit=${limit}`,
+          href: `${baseUrl}${path}?offset=${offset}&limit=${limit}`,
         },
       },
     };
 
     if (offset > 0) {
       result.links.prev = {
-        href: `${url}?offset=${offset - limit}&limit=${limit}`,
+        href: `${baseUrl}${path}?offset=${offset - limit}&limit=${limit}`,
       };
     }
 
     if (episodes.rows.length === limit) {
       result.links.next = {
-        href: `${url}?offset=${Number(offset) + limit}&limit=${limit}`,
+        href: `${baseUrl}${path}?offset=${
+          Number(offset) + limit
+        }&limit=${limit}`,
       };
     }
 
@@ -233,7 +244,9 @@ router.delete(
   catchErrors(validationCheck),
 
   async (req, res) => {
-    const result = await query(`DELETE FROM seasons WHERE show = ${req.params.id} AND number = ${req.params.season} `);
+    const result = await query(
+      `DELETE FROM seasons WHERE show = ${req.params.id} AND number = ${req.params.season} `,
+    );
     return res.json(result);
   },
 );
