@@ -105,6 +105,10 @@ router.get('/tv/:id/season/:season/episode/:episode', async (req, res) => {
   res.json(episodes.rows[0]);
 });
 
+/**
+ * Deletar episode (:episode) úr þáttaröð (:id) og season (:season)
+ * Þarf að vera admin
+ */
 router.delete(
   '/tv/:id/season/:season/episode/:episode',
   requireAdminAuthentication,
