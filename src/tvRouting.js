@@ -8,6 +8,7 @@ import { param, body, validationResult } from 'express-validator';
 import { query } from './db.js';
 
 import {
+  isLoggedIn,
   requireAdminAuthentication,
   requireAuthentication,
 } from './usercontrol.js';
@@ -30,14 +31,14 @@ function catchErrors(fn) {
 fylki af flokkum, fylki af seasons, meðal einkunn sjónvarpsþáttar, 
 fjölda einkunna sem hafa verið skráðar fyrir sjónvarpsþátt */
 
-router.get('/tv', async (req, res, next) => {
+router.get('/tv', isLoggedIn, async (req, res, next) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
   limit = Number(limit);
 
   const allShows = await query(
     'SELECT * FROM shows ORDER BY id ASC OFFSET $1 LIMIT $2',
-    [offset, limit],
+    [offset, limit]
   );
 
   const result = {
@@ -112,18 +113,13 @@ const validationMiddlewareTVShowPatch = [
   body('webpage')
     .isLength({ max: 255 })
     .withMessage('Webpage má að hámarki vera 255 stafir'),
-  body('webpage')
-    .isURL()
-    .withMessage('Webpage þarf að vera á URL formi'),
-  param('id')
-    .isNumeric().withMessage('id þarf að vera tala'),
+  body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
+  param('id').isNumeric().withMessage('id þarf að vera tala'),
 ];
 
 const validationMiddlewareId = [
-  param('id')
-    .isNumeric().withMessage('id þarf að vera tala'),
+  param('id').isNumeric().withMessage('id þarf að vera tala'),
 ];
-
 
 const xssSanitizationTVShow = [
   body('title').customSanitizer((v) => xss(v)),
@@ -138,10 +134,7 @@ const xssSanitizationTVShow = [
   body('id').customSanitizer((v) => xss(v)),
 ];
 
-
-const xssSanitizationId = [
-  param('id').customSanitizer((v) => xss(v)),
-];
+const xssSanitizationId = [param('id').customSanitizer((v) => xss(v))];
 
 async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
@@ -164,7 +157,6 @@ async function validationCheck(req, res, next) {
 
   return next();
 }
-
 
 router.post(
   '/tv',
@@ -206,7 +198,7 @@ router.post(
     const result = await query(q, showData);
 
     return res.json(result);
-  },
+  }
 );
 
 /**
@@ -226,10 +218,12 @@ router.get('/tv/:id', requireAuthentication, async (req, res) => {
   const getUserShow = 'SELECT * FROM users_shows WHERE show = $1';
   const userShow = await query(getUserShow, [req.params.id]);
 
-  const getUserRating = 'SELECT rating FROM users_shows WHERE "user" = $1 AND show = $2';
+  const getUserRating =
+    'SELECT rating FROM users_shows WHERE "user" = $1 AND show = $2';
   const userRating = await query(getUserRating, [req.user.id, req.params.id]);
 
-  const getGenres = 'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
+  const getGenres =
+    'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
   const showGenres = await query(getGenres, [req.params.id]);
 
   const getSeasons = 'SELECT * FROM seasons WHERE show = $1;';
@@ -281,7 +275,6 @@ router.patch(
 
     const { id } = req.params;
 
-
     const showData = [
       title,
       first_aired,
@@ -312,7 +305,7 @@ router.patch(
     const result = await query(q, showData);
 
     return res.json(result.rows[0]);
-  },
+  }
 );
 
 /**
@@ -329,5 +322,5 @@ router.delete(
   async (req, res, next) => {
     const result = await query(`DELETE FROM shows WHERE id = ${req.params.id}`);
     return res.json(result);
-  },
+  }
 );
