@@ -28,6 +28,13 @@ function catchErrors(fn) {
   return (req, res, next) => fn(req, res, next).catch(next);
 }
 
+<<<<<<< HEAD
+=======
+
+/* get á /tv - `GET` skilar síðum af sjónvarpsþáttum með grunnupplýsingum, 
+fylki af flokkum, fylki af seasons, meðal einkunn sjónvarpsþáttar, 
+fjölda einkunna sem hafa verið skráðar fyrir sjónvarpsþátt */
+>>>>>>> 90ff972e8c86925617be9cbbd4daa3bf808a6fef
 router.get('/tv', isLoggedIn, async (req, res) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
@@ -209,6 +216,10 @@ router.get('/tv/:id', requireAuthentication, async (req, res) => {
   const getShow = 'SELECT row_to_json (shows) FROM shows WHERE id = $1';
   const show = await query(getShow, [req.params.id]);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 90ff972e8c86925617be9cbbd4daa3bf808a6fef
   const getUserShow = 'SELECT * FROM users_shows WHERE show = $1';
   const userShow = await query(getUserShow, [req.params.id]);
 
