@@ -21,7 +21,8 @@ export const router = express.Router();
 
 const {
   JWT_SECRET: jwtSecret,
-  TOKEN_LIFETIME: tokenLifetime = 240,
+
+  TOKEN_LIFETIME: tokenLifetime = 1200,
 } = process.env;
 
 if (!jwtSecret) {
@@ -92,6 +93,9 @@ export function requireAdminAuthentication(req, res, next) {
   })(req, res, next);
 }
 
+/**
+ * Skráir notanda inn.
+ */
 router.post('/users/login', async (req, res) => {
   const { username, password = '' } = req.body;
   const user = await findByUsername(username);
@@ -113,6 +117,7 @@ router.post('/users/login', async (req, res) => {
 });
 
 router.get('/users', requireAdminAuthentication, async (req, res) => {
+  console.log('requireAdminAuthentication :>> ');
   const allusers = await query('SELECT * FROM users');
   const users = [];
   allusers.rows.map((row) => {
@@ -190,6 +195,9 @@ router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
   }
 });
 
+/**
+ * Skráir nýjan notanda í gagnagrunn.
+ */
 router.post('/users/register', async (req, res) => {
   const { username, email, password = '' } = req.body;
   const user = await findByUsername(username);
@@ -199,8 +207,6 @@ router.post('/users/register', async (req, res) => {
   }
 
   const id = registerUser(username, email, password);
-
-  // const passwordIsCorrect = await comparePasswords(password, user.password);
 
   if (id) {
     const payload = { id };
