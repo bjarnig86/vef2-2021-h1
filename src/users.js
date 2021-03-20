@@ -40,6 +40,23 @@ export async function findById(id) {
   return null;
 }
 
+export async function findByUserIdAndShowId(userId, show) {
+  const q = 'SELECT * FROM users_shows WHERE "user" = $1 AND show = $2';
+
+  try {
+    const result = await query(q, [userId, show]);
+
+    if (result.rowCount === 1) {
+      return result.rows[0];
+    }
+  } catch (e) {
+    console.error('Gat ekki fundið notanda eftir notanda id');
+    return null;
+  }
+
+  return false;
+}
+
 export async function registerUser(username, email, password) {
   const hashedPassword = await hashPassword(password);
   const q =

@@ -5,6 +5,7 @@ import { router as userRouter } from './usercontrol.js';
 import { router as tvRouter } from './tvRouting.js';
 import { router as tvSeasonRouter } from './tvSeason.js';
 import { router as episodeRouter } from './episodes.js';
+import { router as userRatingRouter } from './tvRateState.js';
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.get('/', (req, res) => {
 });
 
 app.use(userRouter);
+app.use(userRatingRouter);
 app.use(tvRouter);
 app.use(tvSeasonRouter);
 app.use(episodeRouter);
