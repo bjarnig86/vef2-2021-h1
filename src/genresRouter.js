@@ -1,13 +1,8 @@
 import express from 'express';
-import xss from 'xss';
 import dotenv from 'dotenv';
-import { param, body, validationResult } from 'express-validator';
 import { query } from './db.js';
 
-import {
-  requireAdminAuthentication,
-  requireAuthentication,
-} from './usercontrol.js';
+import { requireAdminAuthentication } from './usercontrol.js';
 import { catchErrors, validationCheck } from './utils.js';
 
 dotenv.config();

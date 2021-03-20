@@ -7,11 +7,10 @@ import xss from 'xss';
 import { body, param, validationResult } from 'express-validator';
 import { query } from './db.js';
 import { validationCheck } from './utils.js';
-import { withMulter } from './image.js';
-import { createImageURL } from './image.js';
+import { withMulter, createImageURL } from './image.js';
 
 import {
-  isLoggedIn,
+  isLoggedIn, //ekkert notað??
   requireAdminAuthentication,
   requireAuthentication,
 } from './usercontrol.js';
@@ -50,20 +49,16 @@ function catchErrors(fn) {
  * meðal einkunn sjónvarpsþáttar,
  * fjölda einkunna sem hafa verið skráðar fyrir sjónvarpsþátt
  */
-router.get('/tv', isLoggedIn, async (req, res) => {
+router.get('/tv', async (req, res) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
   limit = Number(limit);
-
-  const { user } = req;
-  console.log('user :>> ', user);
 
   const allShows = await query(
     'SELECT * FROM shows ORDER BY id ASC OFFSET $1 LIMIT $2',
     [offset, limit],
   );
 
-  // const url = req.protocol + '://' + req.headers.host + req.originalUrl;
   const { path } = req;
 
   const result = {
@@ -144,11 +139,10 @@ async function validationMiddlewareTVShow({
       error: 'Webpage má að hámarki vera 255 stafir',
     });
   }
-
   return validation;
-}
+} //held það megi taka þetta út
 
-const validationMiddlewareTVShowPatch = [
+/*const validationMiddlewareTVShowPatch = [
   body('title')
     .isLength({ min: 1 })
     .withMessage('Titill þarf að vera amk 1 stafur'),
@@ -172,13 +166,11 @@ const validationMiddlewareTVShowPatch = [
     .withMessage('Webpage má að hámarki vera 255 stafir'),
   body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
   param('id').isNumeric().withMessage('id þarf að vera tala'),
-];
-
-const validationMiddlewareId = [
+];*/ const validationMiddlewareId = [
   param('id').isNumeric().withMessage('id þarf að vera tala'),
-];
+]; //held það megi taka þetta út
 
-const xssSanitizationTVShow = [
+/*const xssSanitizationTVShow = [
   body('title').customSanitizer((v) => xss(v)),
   body('first_aired').customSanitizer((v) => xss(v)),
   body('in_production').customSanitizer((v) => xss(v)),
@@ -189,9 +181,9 @@ const xssSanitizationTVShow = [
   body('network').customSanitizer((v) => xss(v)),
   body('webpage').customSanitizer((v) => xss(v)),
   body('id').customSanitizer((v) => xss(v)),
+];*/ const xssSanitizationId = [
+  param('id').customSanitizer((v) => xss(v)),
 ];
-
-const xssSanitizationId = [param('id').customSanitizer((v) => xss(v))];
 
 async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
@@ -221,7 +213,13 @@ router.post(
       webpage,
     } = req.body;
 
-    const val = { title, tagline, language, network, webpage };
+    const val = {
+      title,
+      tagline,
+      language,
+      network,
+      webpage,
+    };
 
     const validations = await validationMiddlewareTVShow(val);
     catchErrors(validationCheckTVShow);
@@ -237,8 +235,6 @@ router.post(
         errors: valid,
       });
     }
-
-    console.log('Mynd' + image + 'routing');
 
     const isset = (f) => typeof f === 'string' || typeof f === 'number';
 
@@ -360,17 +356,18 @@ router.get('/tv/:id', isLoggedIn, async (req, res) => {
 router.patch(
   '/tv/:id',
   requireAdminAuthentication,
-  validationMiddlewareTVShowPatch,
-  xssSanitizationTVShow,
-  catchErrors(validationCheckTVShow),
+  validationMiddlewareId,
+  //validationMiddlewareTVShowPatch,
+  //xssSanitizationTVShow,
+  //catchErrors(validationCheckTVShow),
 
   async (req, res, next) => {
+    await withMulter(req, res, next);
     const {
       title,
       first_aired,
       in_production,
       tagline,
-      image,
       description,
       language,
       network,
@@ -378,17 +375,34 @@ router.patch(
     } = req.body;
 
     const { id } = req.params;
+    const val = { title, tagline, language, network, webpage };
+
+    const validations = await validationMiddlewareTVShow(val);
+    catchErrors(validationCheckTVShow);
+    if (validations.length > 0) {
+      return res.status(400).json({
+        errors: validations,
+      });
+    }
+
+    const [image, valid] = await createImageURL(req, res, next);
+    if (valid.length > 0) {
+      return res.status(400).json({
+        errors: valid,
+      });
+    }
+    const isset = (f) => typeof f === 'string' || typeof f === 'number';
 
     const showData = [
-      title,
-      first_aired,
-      in_production,
-      tagline,
+      isset(title) ? xss(title) : null,
+      isset(first_aired) ? xss(first_aired) : null,
+      isset(in_production) ? xss(in_production) : null,
+      isset(tagline) ? xss(tagline) : null,
       image,
-      description,
-      language,
-      network,
-      webpage,
+      isset(description) ? xss(description) : null,
+      isset(language) ? xss(language) : null,
+      isset(network) ? xss(network) : null,
+      isset(webpage) ? xss(webpage) : null,
       id,
     ];
 
@@ -420,7 +434,7 @@ router.patch(
 router.delete(
   '/tv/:id',
   requireAdminAuthentication,
-  validationMiddlewareId,
+  validationMiddlewareId, //er ekki allt þetta validation/sanitization óþarfi í delete?
   xssSanitizationId,
   catchErrors(validationCheck),
 

@@ -57,6 +57,10 @@ export async function findByUserIdAndShowId(userId, show) {
   return false;
 }
 
+export async function hashPassword(password) {
+  return await bcrypt.hash(password, 11);
+}
+
 export async function registerUser(username, email, password) {
   const hashedPassword = await hashPassword(password);
   const q =
@@ -73,10 +77,6 @@ export async function registerUser(username, email, password) {
   }
 
   return null;
-}
-
-export async function hashPassword(password) {
-  return await bcrypt.hash(password, 11);
 }
 
 export async function findByShowId(show) {

@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import xss from 'xss';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
-import { body, param, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 
 import {
   comparePasswords,
@@ -48,17 +48,16 @@ async function validateUser({ username, password, name }, patch = false) {
 
   // can't patch username
   if (!patch) {
-    const m =
-      'Username is required, must be at least three letters and no more than 32 characters';
+    const m = 'Username is required, must be at least three letters and no more than 32 characters';
     if (
-      typeof username !== 'string' ||
-      username.length < 3 ||
-      username.length > 32
+      typeof username !== 'string'
+      || username.length < 3
+      || username.length > 32
     ) {
       validationMessages.push({ field: 'username', message: m });
     }
 
-    const user = await users.findByUsername(username);
+    const user = await findByUsername(username);
 
     if (user) {
       validationMessages.push({
@@ -135,8 +134,7 @@ export function requireAuthentication(req, res, next) {
     }
 
     if (!user) {
-      const error =
-        info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
+      const error = info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
 
       return res.status(401).json({ error });
     }
@@ -154,8 +152,7 @@ export function requireAdminAuthentication(req, res, next) {
     }
 
     if (!user) {
-      const error =
-        info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
+      const error = info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
 
       return res.status(401).json({ error });
     }
@@ -174,7 +171,7 @@ export function isLoggedIn(req, res, next) {
   if (!auth) {
     return next();
   }
-  console.log('AUTH --> ', auth);
+
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (info) {
       return false;
@@ -217,22 +214,21 @@ router.post('/users/login', async (req, res) => {
 });
 
 router.get('/users', requireAdminAuthentication, async (req, res) => {
-  console.log('requireAdminAuthentication :>> ');
   const allusers = await query('SELECT * FROM users');
   const users = [];
   allusers.rows.map((row) => {
-    let user = { id: row.id, username: row.username, email: row.email };
+    const user = { id: row.id, username: row.username, email: row.email };
     return users.push(user);
   });
   return res.json({ users });
 });
 
-router.get('/users/me', requireAuthentication, async (req, res) => {
+router.get('/users/me', requireAuthentication, async (req, res, next) => {
   if (req.method === 'PATCH') {
-    next();
+    return next();
   }
   const { id, username, email } = req.user;
-  const user = { id: id, username: username, email: email };
+  const user = { id, username, email };
   return res.json(user);
 });
 
@@ -248,7 +244,7 @@ router.patch('/users/me', requireAuthentication, async (req, res) => {
   if (email !== undefined && password !== undefined) {
     const hashedPassword = await hashPassword(password);
     await query(
-      `UPDATE users SET (email, password) = ('${email}', '${hashedPassword}') WHERE id = ${id}`
+      `UPDATE users SET (email, password) = ('${email}', '${hashedPassword}') WHERE id = ${id}`,
     );
     res.json({ message: 'User has been updated' });
   } else if (email) {
@@ -257,16 +253,15 @@ router.patch('/users/me', requireAuthentication, async (req, res) => {
   } else if (password) {
     const hashedPassword = await hashPassword(password);
     await query(
-      `UPDATE users SET password = '${hashedPassword}' WHERE id = ${id}`
+      `UPDATE users SET password = '${hashedPassword}' WHERE id = ${id}`,
     );
-    res.json({ message: 'User has been updated' });
-  } else {
-    res.json({ error: 'no input' });
+    return res.json({ message: 'User has been updated' });
   }
+  return res.json({ error: 'no input' });
 });
 
 router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
-  const params = req.params;
+  const { params } = req;
   const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
   const user = {
     id: getUser.rows[0].id,
@@ -278,8 +273,7 @@ router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
 });
 
 router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
-  const params = req.params;
-  const body = req.body;
+  const { params } = req;
   const currentUser = req.user;
 
   // ef reynt er að breyta sér sjálfum
@@ -292,12 +286,11 @@ router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
   // ef user sem á að breyta er admin
   if (getUser.rows[0].admin) {
     return res.json({ error: 'User already is admin' });
-  } else {
-    // Breyting á user
-    await query(`UPDATE users SET admin = true WHERE id = ${params.id}`);
-
-    return res.json({ status: 'User is now admin' });
   }
+  // Breyting á user
+  await query(`UPDATE users SET admin = true WHERE id = ${params.id}`);
+
+  return res.json({ status: 'User is now admin' });
 });
 
 /**
@@ -326,5 +319,5 @@ router.post(
     }
 
     return res.status(401).json({ error: 'Could not register user ' });
-  }
+  },
 );

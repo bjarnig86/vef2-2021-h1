@@ -14,13 +14,13 @@
   - `GET` skilar stöku season fyrir þátt með grunnupplýsingum, fylki af þáttum <komið>
   - `DELETE`, eyðir season, aðeins ef notandi er stjórnandi <komið>
 - `/tv/:id/season/:id/episode/` <komið>
-  - `POST` býr til nýjan þátt í season, aðeins ef notandi er stjórnandi
+  - `POST` býr til nýjan þátt í season, aðeins ef notandi er stjórnandi <komið>
 - `/tv/:id/season/:id/episode/:id` <komið>
-  - `GET` skilar upplýsingum um þátt
-  - `DELETE`, eyðir þætti, aðeins ef notandi er stjórnandi
+  - `GET` skilar upplýsingum um þátt <komið>
+  - `DELETE`, eyðir þætti, aðeins ef notandi er stjórnandi <komið>
 - `/genres` <Komið>
-  - `GET` skilar síðu af tegundum (genres)
-  - `POST` býr til tegund, aðeins ef notandi er stjórnandi
+  - `GET` skilar síðu af tegundum (genres) <komið>
+  - `POST` býr til tegund, aðeins ef notandi er stjórnandi <komið>
 
 ### Notendur
 
@@ -41,13 +41,13 @@ Aldrei skal skila eða sýna hash fyrir lykilorð.
 
 ### Sjónvarpsþættir og notendur
 
-- `/tv/:id/rate`
+- `/tv/:id/rate`<komið>
   - `POST`, skráir einkunn innskráðs notanda á sjónvarpsþætti, aðeinsfyrir innskráða notendur <komið>
   - `PATCH`, uppfærir einkunn innskráðs notanda á sjónvarpsþætti<komið>
-  - `DELETE`, eyðir einkunn innskráðs notanda á sjónvarpsþætti
-- `/tv/:id/state`
+  - `DELETE`, eyðir einkunn innskráðs notanda á sjónvarpsþætti <komið>
+- `/tv/:id/state` <komið>
   - `POST`, skráir stöðu innskráðs notanda á sjónvarpsþætti, aðeins fyrir innskráða notendur <komið>
   - `PATCH`, uppfærir stöðu innskráðs notanda á sjónvarpsþætti <komið>
-  - `DELETE`, eyðir stöðu innskráðs notanda á sjónvarpsþætti
+  - `DELETE`, eyðir stöðu innskráðs notanda á sjónvarpsþætti <komið>
 - `/tv/:id` <komið>
   - Ef notandi er innskráður skal sýna einkunn og stöðu viðkomandi á sjónvarpsþætti. <komið>
