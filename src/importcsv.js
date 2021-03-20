@@ -4,11 +4,13 @@ import dotenv from 'dotenv';
 import csv from 'csv-parser';
 import fs from 'fs';
 import { query } from './db.js';
-//import neatCsv from 'neat-csv';
-//import { parse } from 'path';
 
 dotenv.config();
 
+/**
+ * Býr til genres og shows_genres töflurnar með því að sækja upplýsingar úr series.csv skjalinu
+ * @param {*} rows 
+ */
 async function importGenres(rows) {
   let genres = [];
   let id = 1;
@@ -24,7 +26,6 @@ async function importGenres(rows) {
       }
     });
   });
-  console.log(genres);
 
   //genres sett inn í sína töflu
   const q = 'INSERT INTO genres (title) VALUES ($1) RETURNING *';
@@ -49,27 +50,12 @@ async function importGenres(rows) {
       query(qu, values);
     });
   });
-
-  /*const inserts = genres.map(c => query(q, [c]));
-
-  // inserta öllu og bíða
-  const results = await Promise.all(inserts);
-
-  const mapped = {};
-
-  // skila á forminu { NAFN: id, .. } svo það sé auðvelt að fletta upp
-  results.forEach((r) => {
-    const [{
-      id,
-      title,
-    }] = r.rows;
-
-    mapped[title] = id;
-  });
-
-  return mapped;*/
 }
 
+/**
+ * Býr til einn þátt í gagnagrunninum
+ * @param {*} row 
+ */
 async function importShow(row) {
   const q = `
     INSERT INTO
@@ -97,6 +83,10 @@ async function importShow(row) {
   return query(q, values);
 }
 
+/**
+ * Býr til eitt season í gagnagrunninum
+ * @param {*} row 
+ */
 async function importSeason(row) {
   const q = `
     INSERT INTO
@@ -124,6 +114,10 @@ async function importSeason(row) {
   return query(q, values);
 }
 
+/**
+ * Býr til einn þátt í gagnagrunnninum
+ * @param {*} row 
+ */
 async function importEpisode(row) {
   const q = `
     INSERT INTO
@@ -148,6 +142,10 @@ async function importEpisode(row) {
   return query(q, values);
 }
 
+/**
+ * Hjálparfall sem parse-ar .csv skrá
+ * @param {*} file 
+ */
 function parseFile(file) {
   let results = [];
   return new Promise((resolve, reject) => {
@@ -163,6 +161,10 @@ function parseFile(file) {
   });
 }
 
+/**
+ * Fall sem sækir gögn úr series skjalinu og sendir 
+ * áfram í tvö önnur föll
+ */
 async function importSeries() {
   console.info('Starting Series');
   const file = './data/series.csv';
@@ -178,6 +180,10 @@ async function importSeries() {
   console.info('Finished Series');
 }
 
+/**
+ * Fall sem sækir gögn úr seasons skjalinu og sendir
+ * áfram í annað fall
+ */
 async function importSeasons() {
   console.info('Starting Seasons');
   const file = './data/seasons.csv';
@@ -190,6 +196,10 @@ async function importSeasons() {
   console.info('Finished Seasons');
 }
 
+/**
+ * Fall sem sækir gögn úr episodes skjalinu og sendir
+ * áfram í annað fall
+ */
 async function importEpisodes() {
   console.info('Starting Episodes');
   const file = './data/episodes.csv';

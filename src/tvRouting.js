@@ -7,6 +7,8 @@ import xss from 'xss';
 import { body, param, validationResult } from 'express-validator';
 import { query } from './db.js';
 import { validationCheck } from './utils.js';
+import { withMulter } from './image.js';
+import { createImageURL } from './image.js';
 
 import {
   isLoggedIn,
@@ -22,8 +24,6 @@ export const router = express.Router();
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 function isEmpty(s) {
 if (typeof s === 'undefined') return true;
@@ -93,30 +93,55 @@ router.get('/tv', isLoggedIn, async (req, res) => {
   res.json(result);
 });
 
-const validationMiddlewareTVShow = [
-  body('title')
-    .isLength({ min: 1 })
-    .withMessage('Titill þarf að vera amk 1 stafur'),
-  body('title')
-    .isLength({ max: 128 })
-    .withMessage('Titill má að hámarki vera 128 stafir'),
-  body('tagline')
-    .isLength({ max: 128 })
-    .withMessage('Tagline má að hámarki vera 128 stafir'),
-  body('description')
-    .isLength({ max: 400 })
-    .withMessage('Description má að hámarki vera 400 stafir'),
-  body('language')
-    .isLength({ max: 2 })
-    .withMessage('Language er táknað með tveimur bókstöfum'),
-  body('network')
-    .isLength({ max: 40 })
-    .withMessage('Network má að hámarki vera 40 stafir'),
-  body('webpage')
-    .isLength({ max: 255 })
-    .withMessage('Webpage má að hámarki vera 255 stafir'),
-  body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
-];
+/**
+ * validerar post gögn frá /tv
+ * @param {*} param0 
+ */
+async function validationMiddlewareTVShow(
+  {title, tagline, language, network, webpage} = {}
+) {
+  const validation = [];
+
+  if(isEmpty(title) || title.length < 1) {
+    validation.push({
+      field: 'title',
+      error: 'Titill þarf að vera amk 1 stafur',
+    });
+  }
+  if(!isEmpty(title) && title.length > 255) {
+    validation.push({
+      field: 'title',
+      error: 'Titill má að hámarki vera 255 stafir',
+    });
+  }
+  if(!isEmpty(tagline) && tagline.length > 255) {
+    validation.push({
+      field: 'tagline',
+      error: 'Tagline má að hámarki vera 255 stafir',
+    });
+  }
+  if(isEmpty(language) || language.length !== 2) {
+    validation.push({
+      field: 'language',
+      error: 'Language þarf að vera til staðar og er táknað með tveimur bókstöfum',
+    });
+  }
+  if(!isEmpty(network) && network.length > 255) {
+    validation.push({
+      field: 'network',
+      error: 'Network má að hámarki vera 255 stafir',
+    });
+  }
+  if(!isEmpty(webpage) && webpage.length > 255) {
+    validation.push({
+      field: 'webpage',
+      error: 'Webpage má að hámarki vera 255 stafir',
+    });
+  }
+
+  return validation;
+}
+
 
 const validationMiddlewareTVShowPatch = [
   body('title')
@@ -178,8 +203,8 @@ router.post(
   '/tv',
   requireAdminAuthentication,
 
-
-  async (req, res) => {
+  async (req, res, next) => {
+    await withMulter(req, res, next);
     const {
       title,
       first_aired,
