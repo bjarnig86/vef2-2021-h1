@@ -198,7 +198,10 @@ async function validationCheckTVShow(req, res, next) {
 
   return next();
 }
-
+/**
+ * /tv POST
+ * býr til nýjan sjónvarpsþátt, aðeins ef notandi er stjórnandi
+ */
 router.post(
   '/tv',
   requireAdminAuthentication,

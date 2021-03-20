@@ -13,6 +13,10 @@ dotenv.config();
 
 export const router = express.Router();
 
+/**
+ * /tv/:id/rate POST,
+ * skráir einkunn innskráðs notanda á sjónvarpsþætti, aðeins fyrir innskráða notendur
+ */
 router.post('/tv/:id/rate', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;
@@ -42,6 +46,10 @@ router.post('/tv/:id/rate', requireAuthentication, async (req, res) => {
   }
 });
 
+/**
+ * /tv/:id/rate PATCH,
+ * uppfærir einkunn innskráðs notanda á sjónvarpsþætti
+ */
 router.patch('/tv/:id/rate', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;
@@ -60,6 +68,10 @@ router.patch('/tv/:id/rate', requireAuthentication, async (req, res) => {
   return res.json(result);
 });
 
+/**
+ * /tv/:id/rate DELETE,
+ * eyðir einkunn innskráðs notanda á sjónvarpsþætti
+ */
 router.delete('/tv/:id/rate', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;
@@ -76,6 +88,11 @@ router.delete('/tv/:id/rate', requireAuthentication, async (req, res) => {
   return res.json(result);
 });
 
+/**
+ * /tv/:id/state POST,
+ * skráir stöðu innskráðs notanda á sjónvarpsþætti,
+ * aðeins fyrir innskráða notendur
+ */
 router.post('/tv/:id/state', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;
@@ -103,6 +120,10 @@ router.post('/tv/:id/state', requireAuthentication, async (req, res) => {
   }
 });
 
+/**
+ * /tv/:id/state PATCH,
+ * uppfærir stöðu innskráðs notanda á sjónvarpsþætti
+ */
 router.patch('/tv/:id/state', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;
