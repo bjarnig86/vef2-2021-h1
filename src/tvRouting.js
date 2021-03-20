@@ -10,7 +10,7 @@ import { validationCheck } from './utils.js';
 import { withMulter, createImageURL } from './image.js';
 
 import {
-  isLoggedIn,
+  isLoggedIn,    //ekkert notað??
   requireAdminAuthentication,
   requireAuthentication,
 } from './usercontrol.js';
@@ -137,11 +137,10 @@ async function validationMiddlewareTVShow({
       error: 'Webpage má að hámarki vera 255 stafir',
     });
   }
-
   return validation;
 }
 
-const validationMiddlewareTVShowPatch = [
+/*const validationMiddlewareTVShowPatch = [
   body('title')
     .isLength({ min: 1 })
     .withMessage('Titill þarf að vera amk 1 stafur'),
@@ -165,13 +164,13 @@ const validationMiddlewareTVShowPatch = [
     .withMessage('Webpage má að hámarki vera 255 stafir'),
   body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
   param('id').isNumeric().withMessage('id þarf að vera tala'),
-];
+];*/    //held það megi taka þetta út
 
 const validationMiddlewareId = [
   param('id').isNumeric().withMessage('id þarf að vera tala'),
 ];
 
-const xssSanitizationTVShow = [
+/*const xssSanitizationTVShow = [
   body('title').customSanitizer((v) => xss(v)),
   body('first_aired').customSanitizer((v) => xss(v)),
   body('in_production').customSanitizer((v) => xss(v)),
@@ -182,7 +181,7 @@ const xssSanitizationTVShow = [
   body('network').customSanitizer((v) => xss(v)),
   body('webpage').customSanitizer((v) => xss(v)),
   body('id').customSanitizer((v) => xss(v)),
-];
+];*/     //held það megi taka þetta út
 
 const xssSanitizationId = [param('id').customSanitizer((v) => xss(v))];
 
@@ -376,7 +375,7 @@ router.patch(
 router.delete(
   '/tv/:id',
   requireAdminAuthentication,
-  validationMiddlewareId,
+  validationMiddlewareId,    //er ekki allt þetta validation/sanitization óþarfi í delete?
   xssSanitizationId,
   catchErrors(validationCheck),
 
