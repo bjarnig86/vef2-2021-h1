@@ -6,12 +6,16 @@ import { router as tvRouter } from './tvRouting.js';
 import { router as tvSeasonRouter } from './tvSeason.js';
 import { router as episodeRouter } from './episodes.js';
 import { router as userRatingRouter } from './tvRateState.js';
+import { router as genreRouter } from './genresRouter.js';
 
 dotenv.config();
 
 const { PORT: port = 3000 } = process.env;
 
 const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
   res.json({
@@ -48,6 +52,7 @@ app.use(userRatingRouter);
 app.use(tvRouter);
 app.use(tvSeasonRouter);
 app.use(episodeRouter);
+app.use(genreRouter);
 
 app.listen(port, () => {
   console.info(`Server running at http://localhost:${port}/`);
