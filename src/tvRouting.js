@@ -225,6 +225,7 @@ router.post(
         errors: validations,
       });
     }
+
     const [image, valid] = await createImageURL(req, res, next);
     if (valid.length > 0) {
       return res.status(400).json({
@@ -235,6 +236,7 @@ router.post(
     console.log("Mynd" + image + "routing");
 
     const isset = f => typeof f === 'string' || typeof f === 'number';
+    
     const showData = [
       isset(title) ? xss(title) : null,
       isset(first_aired) ? xss(first_aired) : null,

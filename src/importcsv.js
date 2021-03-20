@@ -91,13 +91,13 @@ async function importSeason(row) {
   const q = `
     INSERT INTO
       seasons
-      (title, number, first_aired, description, poster, show)
+      (title, number, first_aired, description, image, show)
     VALUES
       ($1, $2, $3, $4, $5, $6)`;
 
-  const poster =
+  const image =
     'res.cloudinary.com/dhartr5et/image/upload/v1614684283/vef2-2021-h1/' +
-    row.poster;
+    row.image;
   let date = null;
   if (row.airDate == '') date = null;
   else date = row.airDate;
@@ -107,7 +107,7 @@ async function importSeason(row) {
     row.number,
     date,
     row.overview,
-    poster,
+    image,
     row.serieId,
   ];
 

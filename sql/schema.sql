@@ -46,7 +46,7 @@ CREATE TABLE seasons (
   number smallint NOT NULL CHECK (number > 0),
   first_aired date,
   description text,
-  poster varchar(255) NOT NULL,
+  image varchar(255) NOT NULL,
   show integer REFERENCES shows(id) ON DELETE CASCADE,
   PRIMARY KEY (show, number)
 );

@@ -104,4 +104,3 @@ export function withMulter(req, res, next) {
 
   return [image, validations];
 }
-
