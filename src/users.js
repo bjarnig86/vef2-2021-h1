@@ -78,3 +78,20 @@ export async function registerUser(username, email, password) {
 export async function hashPassword(password) {
   return await bcrypt.hash(password, 11);
 }
+
+export async function findByShowId(show) {
+  const q = 'SELECT * FROM users_shows WHERE show = $1';
+
+  try {
+    const result = await query(q, [show]);
+
+    if (result.rowCount > 0) {
+      return result.rows;
+    }
+  } catch (e) {
+    console.error('Gat ekki fundið notanda eftir notanda id');
+    return null;
+  }
+
+  return false;
+}

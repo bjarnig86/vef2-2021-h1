@@ -16,6 +16,8 @@ import {
   requireAuthentication,
 } from './usercontrol.js';
 
+import { findByUserIdAndShowId } from './users.js';
+
 dotenv.config();
 
 const { BASE_URL: baseUrl } = process.env;
@@ -24,9 +26,8 @@ export const router = express.Router();
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
 
-
 function isEmpty(s) {
-if (typeof s === 'undefined') return true;
+  if (typeof s === 'undefined') return true;
   return s != null && !s;
 }
 
@@ -95,44 +96,49 @@ router.get('/tv', isLoggedIn, async (req, res) => {
 
 /**
  * validerar post gögn frá /tv
- * @param {*} param0 
+ * @param {*} param0
  */
-async function validationMiddlewareTVShow(
-  {title, tagline, language, network, webpage} = {}
-) {
+async function validationMiddlewareTVShow({
+  title,
+  tagline,
+  language,
+  network,
+  webpage,
+} = {}) {
   const validation = [];
 
-  if(isEmpty(title) || title.length < 1) {
+  if (isEmpty(title) || title.length < 1) {
     validation.push({
       field: 'title',
       error: 'Titill þarf að vera amk 1 stafur',
     });
   }
-  if(!isEmpty(title) && title.length > 255) {
+  if (!isEmpty(title) && title.length > 255) {
     validation.push({
       field: 'title',
       error: 'Titill má að hámarki vera 255 stafir',
     });
   }
-  if(!isEmpty(tagline) && tagline.length > 255) {
+  if (!isEmpty(tagline) && tagline.length > 255) {
     validation.push({
       field: 'tagline',
       error: 'Tagline má að hámarki vera 255 stafir',
     });
   }
-  if(isEmpty(language) || language.length !== 2) {
+  if (isEmpty(language) || language.length !== 2) {
     validation.push({
       field: 'language',
-      error: 'Language þarf að vera til staðar og er táknað með tveimur bókstöfum',
+      error:
+        'Language þarf að vera til staðar og er táknað með tveimur bókstöfum',
     });
   }
-  if(!isEmpty(network) && network.length > 255) {
+  if (!isEmpty(network) && network.length > 255) {
     validation.push({
       field: 'network',
       error: 'Network má að hámarki vera 255 stafir',
     });
   }
-  if(!isEmpty(webpage) && webpage.length > 255) {
+  if (!isEmpty(webpage) && webpage.length > 255) {
     validation.push({
       field: 'webpage',
       error: 'Webpage má að hámarki vera 255 stafir',
@@ -141,7 +147,6 @@ async function validationMiddlewareTVShow(
 
   return validation;
 }
-
 
 const validationMiddlewareTVShowPatch = [
   body('title')
@@ -216,7 +221,7 @@ router.post(
       webpage,
     } = req.body;
 
-    const val = {title, tagline, language, network, webpage};
+    const val = { title, tagline, language, network, webpage };
 
     const validations = await validationMiddlewareTVShow(val);
     catchErrors(validationCheckTVShow);
@@ -233,10 +238,10 @@ router.post(
       });
     }
 
-    console.log("Mynd" + image + "routing");
+    console.log('Mynd' + image + 'routing');
 
-    const isset = f => typeof f === 'string' || typeof f === 'number';
-    
+    const isset = (f) => typeof f === 'string' || typeof f === 'number';
+
     const showData = [
       isset(title) ? xss(title) : null,
       isset(first_aired) ? xss(first_aired) : null,
@@ -248,7 +253,6 @@ router.post(
       isset(network) ? xss(network) : null,
       isset(webpage) ? xss(webpage) : null,
     ];
-    
 
     const q = `INSERT INTO shows 
   (title, first_aired, in_production, tagline, image, description, language, network, webpage) 
@@ -271,25 +275,82 @@ router.post(
  * rating notanda,
  * staða notanda
  */
-router.get('/tv/:id', requireAuthentication, async (req, res) => {
-  const getShow = 'SELECT row_to_json (shows) FROM shows WHERE id = $1';
-  const show = await query(getShow, [req.params.id]);
+router.get('/tv/:id', isLoggedIn, async (req, res) => {
+  const { id } = req.params;
+  const { user } = req;
+
+  const qShow = 'SELECT * FROM shows WHERE id = $1;';
+  const show = await query(qShow, [id]);
+  const showData = show.rows[0];
 
   const getUserShow = 'SELECT * FROM users_shows WHERE show = $1';
-  const userShow = await query(getUserShow, [req.params.id]);
+  const userShow = await query(getUserShow, [id]);
 
-  const getUserRating =
-    'SELECT rating FROM users_shows WHERE "user" = $1 AND show = $2';
-  const userRating = await query(getUserRating, [req.user.id, req.params.id]);
+  let ratings = 0;
+  userShow.rows.forEach((row) => {
+    ratings += parseInt(row.rating, 10);
+  });
+
+  const avgRating = ratings / userShow.rowCount;
 
   const getGenres =
     'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
-  const showGenres = await query(getGenres, [req.params.id]);
+  const showGenres = await query(getGenres, [id]);
+  const arrayGenres = showGenres.rows[0].json_agg;
+
+  const allGenres = [];
+  arrayGenres.forEach((genre) => {
+    allGenres.push({ name: genre });
+  });
 
   const getSeasons = 'SELECT * FROM seasons WHERE show = $1;';
-  const showSeasons = await query(getSeasons, [req.params.id]);
+  const showSeasons = await query(getSeasons, [id]);
 
-  return res.json(seasons.rows);
+  if (user) {
+    const userShowRateState = await findByUserIdAndShowId(user.id, id);
+    const userRating = userShowRateState.rating;
+    const userStatus = userShowRateState.status;
+
+    const result = {
+      id: showData.id,
+      title: showData.title,
+      first_aired: showData.first_aired,
+      in_production: showData.in_production,
+      tagline: showData.tagline,
+      image: showData.image,
+      description: showData.description,
+      language: showData.language,
+      network: showData.network,
+      webpage: showData.webpage,
+      averageRating: avgRating,
+      ratingCount: userShow.rowCount,
+      userRating,
+      userStatus,
+      genres: allGenres,
+      seasons: showSeasons.rows,
+    };
+
+    return res.json(result);
+  }
+
+  const result = {
+    id: showData.id,
+    title: showData.title,
+    first_aired: showData.first_aired,
+    in_production: showData.in_production,
+    tagline: showData.tagline,
+    image: showData.image,
+    description: showData.description,
+    language: showData.language,
+    network: showData.network,
+    webpage: showData.webpage,
+    averageRating: avgRating,
+    ratingCount: userShow.rowCount,
+    genres: allGenres,
+    seasons: showSeasons.rows,
+  };
+
+  return res.json(result);
 });
 
 /**
@@ -368,5 +429,3 @@ router.delete(
     return res.json(result);
   },
 );
-
-
