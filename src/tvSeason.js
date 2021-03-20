@@ -11,6 +11,8 @@ import {
   validationCheck,
   catchErrors,
 } from './utils.js';
+import { withMulter } from './image.js';
+import { createImageURL } from './image.js';
 
 import {
   requireAdminAuthentication,
@@ -25,6 +27,15 @@ dotenv.config();
 
 const { BASE_URL: baseUrl } = process.env;
 
+function isEmpty(s) {
+  if (typeof s === 'undefined') return true;
+    return s != null && !s;
+}
+
+function isPosInt(i) {
+  return i > 0 && i !== '' && Number.isInteger(Number(i));
+}
+
 const xssSanitizationSeason = [
   body('title').customSanitizer((v) => xss(v)),
   body('number').customSanitizer((v) => xss(v)),
@@ -33,25 +44,33 @@ const xssSanitizationSeason = [
   body('poster').customSanitizer((v) => xss(v)),
 ];
 
-const validationMiddlewareSeason = [
-  body('title')
-    .isLength({ min: 1 })
-    .withMessage('Titill þarf að vera amk 1 stafur'),
-  body('title')
-    .isLength({ max: 128 })
-    .withMessage('Titill má að hámarki vera 128 stafir'),
-  body('number').isNumeric().withMessage('Fjöldi þarf að vera tala'),
-  body('first_aired')
-    .isDate()
-    .withMessage('Fyrst birt þarf að vera dagsetning'),
-  body('description')
-    .isLength({ max: 400 })
-    .withMessage('Description má að hámarki vera 400 stafir'),
-  body('poster')
-    .isLength({ max: 255 })
-    .withMessage('Mynd má að hámarki vera 255 stafir'),
-  body('poster').isURL().withMessage('Mynd þarf að vera á URL formi'),
-];
+async function validationMiddlewareSeason(
+  {title, number} = {}
+) {
+  const validation = [];
+
+  if(isEmpty(title) || title.length < 1) {
+    validation.push({
+      field: 'title',
+      error: 'Titill þarf að vera amk 1 stafur',
+    });
+  }
+  if(!isEmpty(title) && title.length > 255) {
+    validation.push({
+      field: 'title',
+      error: 'Titill má að hámarki vera 255 stafir',
+    });
+  }
+
+  if(isEmpty(number) || !isPosInt(number)) {
+    validation.push({
+      field: 'number',
+      error: 'Number þarf að vera til staðar og verður að vera jákvæð heiltala',
+    });
+  }
+
+  return validation;
+}
 
 /**
  * skilar fylki af öllum seasons fyrir sjónvarpsþátt
@@ -124,21 +143,39 @@ router.post(
   '/tv/:id/season',
   requireAdminAuthentication,
   validationMiddlewareId,
-  validationMiddlewareSeason,
+  //validationMiddlewareSeason,
   xssSanitizationId,
-  xssSanitizationSeason,
-  catchErrors(validationCheck),
+  //xssSanitizationSeason,
+  //catchErrors(validationCheck),
 
-  async (req, res) => {
+  async (req, res, next) => {
     // console.log(`tvRouting.js: /tv/:id/season post req.body --> ${req.body}`);
-    const { title, number, first_aired, description, poster } = req.body;
+    await withMulter(req, res, next);
 
+    const { title, number, first_aired, description } = req.body;
+    const val = {title, number};
+
+    const validations = await validationMiddlewareSeason(val);
+    catchErrors(validationCheck);
+    if (validations.length > 0) {
+      return res.status(400).json({
+        errors: validations,
+      });
+    }
+
+    const [image, valid] = await createImageURL(req, res, next);
+    if (valid.length > 0) {
+      return res.status(400).json({
+        errors: valid,
+      });
+    }
+    const isset = f => typeof f === 'string' || typeof f === 'number';
     const seasonData = [
-      title,
-      number,
-      first_aired,
-      description,
-      poster,
+      isset(title) ? xss(title) : null,
+      isset(number) ? xss(number) : null,
+      isset(first_aired) ? xss(first_aired) : null,
+      isset(description) ? xss(description) : null,
+      image,
       req.params.id,
     ];
 
@@ -149,9 +186,9 @@ router.post(
       number,
       first_aired,
       description,
-      poster,
+      image,
       show)
-      VALUES ($1,$2,$3,$4,$5,$6)`;
+      VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`;
 
     const result = await query(q, seasonData);
 

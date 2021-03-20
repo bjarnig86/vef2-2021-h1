@@ -11,6 +11,8 @@
 
 /data/img
 
+/temp
+
 # misc
 .HalliTmp.json
 .DS_Store
