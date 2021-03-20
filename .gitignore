@@ -12,6 +12,7 @@
 /data/img
 
 # misc
+.HalliTmp.json
 .DS_Store
 .env.local
 .env.development.local
