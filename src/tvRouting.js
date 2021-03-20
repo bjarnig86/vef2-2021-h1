@@ -4,19 +4,23 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import xss from 'xss';
-import { param, body, validationResult } from 'express-validator';
+import { body, param, validationResult } from 'express-validator';
 import { query } from './db.js';
-import { withMulter } from './image.js';
-import { createImageURL } from './image.js';
-import bodyParser from 'body-parser';
+import { validationCheck } from './utils.js';
 
 import {
+  isLoggedIn,
   requireAdminAuthentication,
   requireAuthentication,
 } from './usercontrol.js';
-const app = express();
+
+dotenv.config();
+
+const { BASE_URL: baseUrl } = process.env;
+
 export const router = express.Router();
 router.use(express.json());
+router.use(express.urlencoded({ extended: true }));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -39,16 +43,21 @@ function catchErrors(fn) {
 /* get á /tv - `GET` skilar síðum af sjónvarpsþáttum með grunnupplýsingum, 
 fylki af flokkum, fylki af seasons, meðal einkunn sjónvarpsþáttar, 
 fjölda einkunna sem hafa verið skráðar fyrir sjónvarpsþátt */
-
-router.get('/tv', async (req, res, next) => {
+router.get('/tv', isLoggedIn, async (req, res) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
   limit = Number(limit);
+
+  const { user } = req;
+  console.log('user :>> ', user);
 
   const allShows = await query(
     'SELECT * FROM shows ORDER BY id ASC OFFSET $1 LIMIT $2',
     [offset, limit],
   );
+
+  // const url = req.protocol + '://' + req.headers.host + req.originalUrl;
+  const { path } = req;
 
   const result = {
     limit,
@@ -56,74 +65,52 @@ router.get('/tv', async (req, res, next) => {
     items: allShows.rows,
     links: {
       self: {
-        href: `/?offset=${offset}&limit=${limit}`,
+        href: `${baseUrl}${path}?offset=${offset}&limit=${limit}`,
       },
     },
   };
 
   if (offset > 0) {
     result.links.prev = {
-      href: `/?offset=${offset - limit}&limit=${limit}`,
+      href: `${baseUrl}${path}?offset=${offset - limit}&limit=${limit}`,
     };
+  } else {
+    result.links.prev = { href: '' };
   }
 
   if (allShows.rows.length === limit) {
     result.links.next = {
-      href: `/?offset=${Number(offset) + limit}&limit=${limit}`,
+      href: `${baseUrl}${path}?offset=${Number(offset) + limit}&limit=${limit}`,
     };
   }
 
   res.json(result);
 });
 
-/**
- * validerar post gögn frá /tv
- * @param {*} param0 
- */
-async function validationMiddlewareTVShow(
-  {title, tagline, language, network, webpage} = {}
-) {
-  const validation = [];
-
-  if(isEmpty(title) || title.length < 1) {
-    validation.push({
-      field: 'title',
-      error: 'Titill þarf að vera amk 1 stafur',
-    });
-  }
-  if(!isEmpty(title) && title.length > 255) {
-    validation.push({
-      field: 'title',
-      error: 'Titill má að hámarki vera 255 stafir',
-    });
-  }
-  if(!isEmpty(tagline) && tagline.length > 255) {
-    validation.push({
-      field: 'tagline',
-      error: 'Tagline má að hámarki vera 255 stafir',
-    });
-  }
-  if(isEmpty(language) || language.length !== 2) {
-    validation.push({
-      field: 'language',
-      error: 'Language þarf að vera til staðar og er táknað með tveimur bókstöfum',
-    });
-  }
-  if(!isEmpty(network) && network.length > 255) {
-    validation.push({
-      field: 'network',
-      error: 'Network má að hámarki vera 255 stafir',
-    });
-  }
-  if(!isEmpty(webpage) && webpage.length > 255) {
-    validation.push({
-      field: 'webpage',
-      error: 'Webpage má að hámarki vera 255 stafir',
-    });
-  }
-
-  return validation;
-}
+const validationMiddlewareTVShow = [
+  body('title')
+    .isLength({ min: 1 })
+    .withMessage('Titill þarf að vera amk 1 stafur'),
+  body('title')
+    .isLength({ max: 128 })
+    .withMessage('Titill má að hámarki vera 128 stafir'),
+  body('tagline')
+    .isLength({ max: 128 })
+    .withMessage('Tagline má að hámarki vera 128 stafir'),
+  body('description')
+    .isLength({ max: 400 })
+    .withMessage('Description má að hámarki vera 400 stafir'),
+  body('language')
+    .isLength({ max: 2 })
+    .withMessage('Language er táknað með tveimur bókstöfum'),
+  body('network')
+    .isLength({ max: 40 })
+    .withMessage('Network má að hámarki vera 40 stafir'),
+  body('webpage')
+    .isLength({ max: 255 })
+    .withMessage('Webpage má að hámarki vera 255 stafir'),
+  body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
+];
 
 const validationMiddlewareTVShowPatch = [
   body('title')
@@ -147,18 +134,13 @@ const validationMiddlewareTVShowPatch = [
   body('webpage')
     .isLength({ max: 255 })
     .withMessage('Webpage má að hámarki vera 255 stafir'),
-  body('webpage')
-    .isURL()
-    .withMessage('Webpage þarf að vera á URL formi'),
-  param('id')
-    .isNumeric().withMessage('id þarf að vera tala'),
+  body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
+  param('id').isNumeric().withMessage('id þarf að vera tala'),
 ];
 
 const validationMiddlewareId = [
-  param('id')
-    .isNumeric().withMessage('id þarf að vera tala'),
+  param('id').isNumeric().withMessage('id þarf að vera tala'),
 ];
-
 
 const xssSanitizationTVShow = [
   body('title').customSanitizer((v) => xss(v)),
@@ -173,14 +155,11 @@ const xssSanitizationTVShow = [
   body('id').customSanitizer((v) => xss(v)),
 ];
 
-
-const xssSanitizationId = [
-  param('id').customSanitizer((v) => xss(v)),
-];
+const xssSanitizationId = [param('id').customSanitizer((v) => xss(v))];
 
 async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
-   console.log('validation :>> ', validation);
+  //   console.log('validation :>> ', validation);
 
   if (!validation.isEmpty()) {
     return res.json({ errors: validation.errors });
@@ -188,28 +167,13 @@ async function validationCheckTVShow(req, res, next) {
 
   return next();
 }
-
-async function validationCheck(req, res, next) {
-  const validation = validationResult(req);
-  // console.log('validation :>> ', validation);
-
-  if (!validation.isEmpty()) {
-    return res.json({ errors: validation.errors });
-  }
-
-  return next();
-}
-
 
 router.post(
   '/tv',
   requireAdminAuthentication,
 
 
-  async (req, res, next) => {
-
-    //const [image, req1] = await imageWithMulter(req, res, next);
-    await withMulter(req, res, next);
+  async (req, res) => {
     const {
       title,
       first_aired,
@@ -281,33 +245,18 @@ router.get('/tv/:id', requireAuthentication, async (req, res) => {
   const getUserShow = 'SELECT * FROM users_shows WHERE show = $1';
   const userShow = await query(getUserShow, [req.params.id]);
 
-  const getUserRating = 'SELECT rating FROM users_shows WHERE "user" = $1 AND show = $2';
+  const getUserRating =
+    'SELECT rating FROM users_shows WHERE "user" = $1 AND show = $2';
   const userRating = await query(getUserRating, [req.user.id, req.params.id]);
 
-  const getGenres = 'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
+  const getGenres =
+    'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
   const showGenres = await query(getGenres, [req.params.id]);
 
   const getSeasons = 'SELECT * FROM seasons WHERE show = $1;';
   const showSeasons = await query(getSeasons, [req.params.id]);
 
-  let showRatingTotal = 0;
-  userShow.rows.forEach((element) => {
-    showRatingTotal += element.rating;
-  });
-
-  const result = {
-    show: show.rows[0].row_to_json,
-    showRatings: {
-      showRatingAverage: showRatingTotal / userShow.rows.length,
-      showRatingCount: userShow.rows.length,
-      userRating: userRating.rows[0].rating,
-    },
-    showGenres: showGenres.rows[0].json_agg,
-    showSeasons: showSeasons.rows,
-    userAdminStatus: req.user.admin,
-  };
-
-  res.json(result);
+  return res.json(seasons.rows);
 });
 
 /**
@@ -335,7 +284,6 @@ router.patch(
     } = req.body;
 
     const { id } = req.params;
-
 
     const showData = [
       title,

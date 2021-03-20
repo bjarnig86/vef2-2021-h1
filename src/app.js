@@ -4,7 +4,9 @@ import dotenv from 'dotenv';
 import { router as userRouter } from './usercontrol.js';
 import { router as tvRouter } from './tvRouting.js';
 import { router as tvSeasonRouter } from './tvSeason.js';
-import bodyParser from 'body-parser';
+import { router as episodeRouter } from './episodes.js';
+import { router as userRatingRouter } from './tvRateState.js';
+import { router as genreRouter } from './genresRouter.js';
 
 dotenv.config();
 
@@ -14,6 +16,9 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 //app.use(express.urlencoded({ extended: true }));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
   res.json({
@@ -46,8 +51,11 @@ app.get('/', (req, res) => {
 });
 
 app.use(userRouter);
+app.use(userRatingRouter);
 app.use(tvRouter);
 app.use(tvSeasonRouter);
+app.use(episodeRouter);
+app.use(genreRouter);
 
 app.listen(port, () => {
   console.info(`Server running at http://localhost:${port}/`);

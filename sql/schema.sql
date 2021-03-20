@@ -62,7 +62,6 @@ CREATE TABLE episodes (
   show integer,
   FOREIGN KEY(show, season) REFERENCES seasons ON DELETE CASCADE,
   PRIMARY KEY (show, season, number)
-  --breyta primary key í show, season, episode
 );
 
 

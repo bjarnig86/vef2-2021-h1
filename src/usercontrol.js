@@ -2,23 +2,102 @@
 import express from 'express';
 import passport from 'passport';
 import dotenv from 'dotenv';
+import xss from 'xss';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
+import { body, param, validationResult } from 'express-validator';
 
 import {
   comparePasswords,
   findByUsername,
   findById,
   registerUser,
+  hashPassword,
 } from './users.js';
 import { query } from './db.js';
+import { catchErrors, validationCheck } from './utils.js';
 
 dotenv.config();
 
 export const router = express.Router();
 
+const userValidation = [
+  body('username')
+    .isLength({ min: 1 })
+    .withMessage('Notendanafn má ekki vera tómt'),
+  body('username')
+    .isLength({ max: 16 })
+    .withMessage('Notendanafn má vera að hámarki 16 stafir'),
+  body('email').isLength({ min: 1 }).withMessage('Netfang má ekki vera tómt'),
+  body('email').isEmail().withMessage('Netfang verður að vera gilt netfang'),
+  body('password')
+    .isLength({ min: 1 })
+    .withMessage('Notendanafn má ekki vera tómt'),
+  body('password')
+    .isLength({ max: 32 })
+    .withMessage('Notendanafn má vera að hámarki 32 stafir'),
+  body('password')
+    .custom((value) => !/\s/.test(value))
+    .withMessage('Lykilorð má ekki innihalda bil'),
+];
+
+const isEmpty = (s) => s != null && !s;
+
+async function validateUser({ username, password, name }, patch = false) {
+  const validationMessages = [];
+
+  // can't patch username
+  if (!patch) {
+    const m =
+      'Username is required, must be at least three letters and no more than 32 characters';
+    if (
+      typeof username !== 'string' ||
+      username.length < 3 ||
+      username.length > 32
+    ) {
+      validationMessages.push({ field: 'username', message: m });
+    }
+
+    const user = await users.findByUsername(username);
+
+    if (user) {
+      validationMessages.push({
+        field: 'username',
+        message: 'Username is already registered',
+      });
+    }
+  }
+
+  if (!patch || password || isEmpty(password)) {
+    if (typeof password !== 'string' || password.length < 6) {
+      validationMessages.push({
+        field: 'password',
+        message: 'Password must be at least six letters',
+      });
+    }
+  }
+
+  if (!patch || name || isEmpty(name)) {
+    if (typeof name !== 'string' || name.length === 0 || name.length > 64) {
+      validationMessages.push({
+        field: 'name',
+        message:
+          'Name is required, must not be empty or longar than 64 characters',
+      });
+    }
+  }
+
+  return validationMessages;
+}
+
+const xssUserSanitize = [
+  body('username').customSanitizer((v) => xss(v)),
+  body('email').customSanitizer((v) => xss(v)),
+];
+
 const {
   JWT_SECRET: jwtSecret,
+
   TOKEN_LIFETIME: tokenLifetime = 1200,
 } = process.env;
 
@@ -90,6 +169,30 @@ export function requireAdminAuthentication(req, res, next) {
   })(req, res, next);
 }
 
+export function isLoggedIn(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth) {
+    return next();
+  }
+  console.log('AUTH --> ', auth);
+  return passport.authenticate('jwt', { session: false }, (err, user, info) => {
+    if (info) {
+      return false;
+    }
+    if (err) {
+      return false;
+    }
+
+    if (!user) {
+      return false;
+    }
+
+    // Látum notanda vera aðgengilegan í rest af middlewares
+    req.user = user;
+    return next();
+  })(req, res, next);
+}
+
 /**
  * Skráir notanda inn.
  */
@@ -125,9 +228,41 @@ router.get('/users', requireAdminAuthentication, async (req, res) => {
 });
 
 router.get('/users/me', requireAuthentication, async (req, res) => {
+  if (req.method === 'PATCH') {
+    next();
+  }
   const { id, username, email } = req.user;
   const user = { id: id, username: username, email: email };
   return res.json(user);
+});
+
+router.patch('/users/me', requireAuthentication, async (req, res) => {
+  const { id } = req.user;
+  const { email, password } = req.body;
+  const validationMessage = validateUser({ email, password }, true);
+
+  if (validationMessage.length > 0) {
+    return res.status(400).json({ errors: validationMessage });
+  }
+
+  if (email !== undefined && password !== undefined) {
+    const hashedPassword = await hashPassword(password);
+    await query(
+      `UPDATE users SET (email, password) = ('${email}', '${hashedPassword}') WHERE id = ${id}`
+    );
+    res.json({ message: 'User has been updated' });
+  } else if (email) {
+    await query(`UPDATE users SET email = '${email}' WHERE id = ${id}`);
+    res.json({ message: 'User has been updated' });
+  } else if (password) {
+    const hashedPassword = await hashPassword(password);
+    await query(
+      `UPDATE users SET password = '${hashedPassword}' WHERE id = ${id}`
+    );
+    res.json({ message: 'User has been updated' });
+  } else {
+    res.json({ error: 'no input' });
+  }
 });
 
 router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
@@ -168,22 +303,28 @@ router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
 /**
  * Skráir nýjan notanda í gagnagrunn.
  */
-router.post('/users/register', async (req, res) => {
-  const { username, email, password = '' } = req.body;
-  const user = await findByUsername(username);
+router.post(
+  '/users/register',
+  userValidation,
+  xssUserSanitize,
+  catchErrors(validationCheck),
+  async (req, res) => {
+    const { username, email, password = '' } = req.body;
+    const user = await findByUsername(username);
 
-  if (user) {
-    return res.status(401).json({ error: 'User already registered' });
+    if (user) {
+      return res.status(401).json({ error: 'User already registered' });
+    }
+
+    const id = registerUser(username, email, password);
+
+    if (id) {
+      const payload = { id };
+      const tokenOptions = { expiresIn: tokenLifetime };
+      const token = jwt.sign(payload, jwtOptions.secretOrKey, tokenOptions);
+      return res.json({ token });
+    }
+
+    return res.status(401).json({ error: 'Could not register user ' });
   }
-
-  const id = registerUser(username, email, password);
-
-  if (id) {
-    const payload = { id };
-    const tokenOptions = { expiresIn: tokenLifetime };
-    const token = jwt.sign(payload, jwtOptions.secretOrKey, tokenOptions);
-    return res.json({ token });
-  }
-
-  return res.status(401).json({ error: 'Could not register user ' });
-});
+);

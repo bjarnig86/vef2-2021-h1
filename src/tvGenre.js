@@ -1,5 +1,4 @@
 import express from 'express';
-import dotenv from 'dotenv';
 import xss from 'xss';
 import { param, body, validationResult } from 'express-validator';
 import { query } from './db.js';
@@ -21,10 +20,6 @@ export const router = express.Router();
 
 router.use(express.json());
 
-dotenv.config();
-
-const { BASE_URL: baseUrl } = process.env;
-
 const xssSanitizationSeason = [
   body('title').customSanitizer((v) => xss(v)),
   body('number').customSanitizer((v) => xss(v)),
@@ -40,7 +35,9 @@ const validationMiddlewareSeason = [
   body('title')
     .isLength({ max: 128 })
     .withMessage('Titill má að hámarki vera 128 stafir'),
-  body('number').isNumeric().withMessage('Fjöldi þarf að vera tala'),
+  body('number')
+    .isNumeric()
+    .withMessage('Fjöldi þarf að vera tala'),
   body('first_aired')
     .isDate()
     .withMessage('Fyrst birt þarf að vera dagsetning'),
@@ -61,8 +58,7 @@ const validationMiddlewareSeason = [
  * @param {*} req Beiðni
  * @param {*} res Svar
  */
-router.get(
-  '/tv/:id/season',
+router.get('/tv/:id/season',
   validationMiddlewareId,
   xssSanitizationId,
   catchErrors(validationCheck),
@@ -71,8 +67,6 @@ router.get(
     let { offset = 0, limit = 10 } = req.query;
     offset = Number(offset);
     limit = Number(limit);
-
-    const { path } = req;
 
     const q = `SELECT * FROM seasons
       WHERE show = $1
@@ -88,26 +82,22 @@ router.get(
       items: seasons.rows,
       links: {
         self: {
-          href: `${baseUrl}${path}?offset=${offset}&limit=${limit}`,
+          href: `/?offset=${offset}&limit=${limit}`,
         },
       },
     };
-    console.log(
-      `tvRouting.js: /tv/:id/season seasons.rows.length --> ${seasons.rows.length}`,
-    );
+    console.log(`tvRouting.js: /tv/:id/season seasons.rows.length --> ${seasons.rows.length}`);
     console.log(`tvRouting.js: /tv/:id/season limit --> ${limit}`);
 
     if (offset > 0) {
       result.links.prev = {
-        href: `${baseUrl}${path}?offset=${offset - limit}&limit=${limit}`,
+        href: `/?offset=${offset - limit}&limit=${limit}`,
       };
     }
 
     if (seasons.rows.length === limit) {
       result.links.next = {
-        href: `${baseUrl}${path}?offset=${
-          Number(offset) + limit
-        }&limit=${limit}`,
+        href: `/?offset=${Number(offset) + limit}&limit=${limit}`,
       };
     }
 
@@ -116,12 +106,11 @@ router.get(
 );
 
 /**
- * /tv/:id/season POST
- * Býr til nýtt í season í sjónvarpþætti,
- * aðeins ef notandi er stjórnandi
- */
-router.post(
-  '/tv/:id/season',
+* /tv/:id/season POST
+* Býr til nýtt í season í sjónvarpþætti,
+* aðeins ef notandi er stjórnandi
+*/
+router.post('/tv/:id/season',
   requireAdminAuthentication,
   validationMiddlewareId,
   validationMiddlewareSeason,
@@ -131,7 +120,13 @@ router.post(
 
   async (req, res) => {
     // console.log(`tvRouting.js: /tv/:id/season post req.body --> ${req.body}`);
-    const { title, number, first_aired, description, poster } = req.body;
+    const {
+      title,
+      number,
+      first_aired,
+      description,
+      poster,
+    } = req.body;
 
     const seasonData = [
       title,
@@ -164,8 +159,7 @@ router.post(
  * skilar stöku season fyrir þátt með grunnupplýsingum,
  * fylki af þáttum
  */
-router.get(
-  '/tv/:id/season/:season',
+router.get('/tv/:id/season/:season',
   validationMiddlewareId,
   validationMiddlewareParamSeason,
   xssSanitizationId,
@@ -175,12 +169,10 @@ router.get(
   async (req, res) => {
     // console.log(`tvSeason.js: /tv/:id/season/:season GET req.url --> ${JSON.stringify(req.url)}`);
     // console.log(`tvSeason.js: /tv/:id/season/:season GET req.params --> ${JSON.stringify(req.params)}`);
-
+  
     let { offset = 0, limit = 10 } = req.query;
     offset = Number(offset);
     limit = Number(limit);
-
-    const { path } = req;
 
     const qSeason = `SELECT * FROM seasons
       WHERE show = $1 AND number = $2`;
@@ -193,12 +185,7 @@ router.get(
       OFFSET $3
       LIMIT $4;`;
 
-    const episodes = await query(qEpisodes, [
-      req.params.id,
-      req.params.season,
-      offset,
-      limit,
-    ]);
+    const episodes = await query(qEpisodes, [req.params.id, req.params.season, offset, limit]);
 
     const result = {
       limit,
@@ -207,22 +194,20 @@ router.get(
       items: episodes.rows,
       links: {
         self: {
-          href: `${baseUrl}${path}?offset=${offset}&limit=${limit}`,
+          href: `/?offset=${offset}&limit=${limit}`,
         },
       },
     };
 
     if (offset > 0) {
       result.links.prev = {
-        href: `${baseUrl}${path}?offset=${offset - limit}&limit=${limit}`,
+        href: `/?offset=${offset - limit}&limit=${limit}`,
       };
     }
 
     if (episodes.rows.length === limit) {
       result.links.next = {
-        href: `${baseUrl}${path}?offset=${
-          Number(offset) + limit
-        }&limit=${limit}`,
+        href: `/?offset=${Number(offset) + limit}&limit=${limit}`,
       };
     }
 
@@ -244,9 +229,7 @@ router.delete(
   catchErrors(validationCheck),
 
   async (req, res) => {
-    const result = await query(
-      `DELETE FROM seasons WHERE show = ${req.params.id} AND number = ${req.params.season} `,
-    );
+    const result = await query(`DELETE FROM seasons WHERE show = ${req.params.id} AND number = ${req.params.season} `);
     return res.json(result);
   },
 );
