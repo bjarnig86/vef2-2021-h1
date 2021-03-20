@@ -11,36 +11,33 @@ export const router = express.Router();
 router.post('/tv/:id/rate', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;
-  const rating = req.body.rating;
+  const { rating } = req.body;
 
   if (!rating) {
     return res.status(400).json({ error: 'wrong input' });
   }
 
-  console.log('BJARNI --> ', rating);
-
   const userQuery = await findByUserIdAndShowId(userId, tvId);
 
   const data = [tvId, userId, rating];
   if (!userQuery || userQuery === null) {
-    const q = `INSERT INTO users_shows (show, "user", rating) VALUES ($1, $2, $3)`;
+    const q = 'INSERT INTO users_shows (show, "user", rating) VALUES ($1, $2, $3)';
     const result = await query(q, data);
     return res.json(result);
   }
 
   if (userQuery.rating === null) {
-    const q = `UPDATE users_shows SET rating = $1 WHERE id = $2`;
+    const q = 'UPDATE users_shows SET rating = $1 WHERE id = $2';
     const result = await query(q, [rating, userQuery.id]);
     return res.json(result);
-  } else {
-    return res.status(401).json({ error: 'Already posted rating' });
   }
+  return res.status(401).json({ error: 'Already posted rating' });
 });
 
 router.patch('/tv/:id/rate', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;
-  const rating = req.body.rating;
+  const { rating } = req.body;
 
   if (!rating) {
     return res.status(400).json({ error: 'wrong input' });
@@ -49,7 +46,7 @@ router.patch('/tv/:id/rate', requireAuthentication, async (req, res) => {
   const userQuery = await findByUserIdAndShowId(userId, tvId);
 
   const data = [rating, userQuery.id];
-  const q = `UPDATE users_shows SET rating = $1 WHERE id = $2`;
+  const q = 'UPDATE users_shows SET rating = $1 WHERE id = $2';
 
   const result = await query(q, data);
   return res.json(result);
@@ -66,7 +63,7 @@ router.delete('/tv/:id/rate', requireAuthentication, async (req, res) => {
   }
 
   const data = [null, userQuery.id];
-  const q = `UPDATE users_shows SET rating = $1 WHERE id = $2`;
+  const q = 'UPDATE users_shows SET rating = $1 WHERE id = $2';
   const result = await query(q, data);
   return res.json(result);
 });
@@ -74,7 +71,7 @@ router.delete('/tv/:id/rate', requireAuthentication, async (req, res) => {
 router.post('/tv/:id/state', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;
-  const status = req.body.status;
+  const { status } = req.body;
 
   if (!status) {
     return res.status(400).json({ error: 'wrong input' });
@@ -85,23 +82,22 @@ router.post('/tv/:id/state', requireAuthentication, async (req, res) => {
   const data = [tvId, userId, status];
 
   if (!userQuery || userQuery === null) {
-    const q = `INSERT INTO users_shows (show, "user", status) VALUES ($1, $2, $3)`;
+    const q = 'INSERT INTO users_shows (show, "user", status) VALUES ($1, $2, $3)';
     const result = await query(q, data);
     return res.json(result);
   }
   if (userQuery.status === null) {
-    const q = `UPDATE users_shows SET status = $1 WHERE id = $2`;
+    const q = 'UPDATE users_shows SET status = $1 WHERE id = $2';
     const result = await query(q, [status, userQuery.id]);
     return res.json(result);
-  } else {
-    return res.status(401).json({ error: 'Already posted status' });
   }
+  return res.status(401).json({ error: 'Already posted status' });
 });
 
 router.patch('/tv/:id/state', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;
-  const status = req.body.status;
+  const { status } = req.body;
 
   if (!status) {
     return res.status(400).json({ error: 'wrong input' });
@@ -110,7 +106,7 @@ router.patch('/tv/:id/state', requireAuthentication, async (req, res) => {
   const userQuery = await findByUserIdAndShowId(userId, tvId);
 
   const data = [status, userQuery.id];
-  const q = `UPDATE users_shows SET status = $1 WHERE id = $2`;
+  const q = 'UPDATE users_shows SET status = $1 WHERE id = $2';
 
   const result = await query(q, data);
   return res.json(result);
@@ -127,7 +123,7 @@ router.delete('/tv/:id/state', requireAuthentication, async (req, res) => {
   }
 
   const data = [null, userQuery.id];
-  const q = `UPDATE users_shows SET status = $1 WHERE id = $2`;
+  const q = 'UPDATE users_shows SET status = $1 WHERE id = $2';
   const result = await query(q, data);
   return res.json(result);
 });

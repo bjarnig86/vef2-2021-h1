@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import xss from 'xss';
-import { param, body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 import { query } from './db.js';
 import {
   validationMiddlewareId,
@@ -11,13 +11,9 @@ import {
   validationCheck,
   catchErrors,
 } from './utils.js';
-import { withMulter } from './image.js';
-import { createImageURL } from './image.js';
+import { withMulter, createImageURL } from './image.js';
 
-import {
-  requireAdminAuthentication,
-  requireAuthentication,
-} from './usercontrol.js';
+import { requireAdminAuthentication } from './usercontrol.js';
 
 export const router = express.Router();
 
@@ -29,7 +25,7 @@ const { BASE_URL: baseUrl } = process.env;
 
 function isEmpty(s) {
   if (typeof s === 'undefined') return true;
-    return s != null && !s;
+  return s != null && !s;
 }
 
 function isPosInt(i) {
@@ -44,25 +40,23 @@ const xssSanitizationSeason = [
   body('poster').customSanitizer((v) => xss(v)),
 ];
 
-async function validationMiddlewareSeason(
-  {title, number} = {}
-) {
+async function validationMiddlewareSeason({ title, number } = {}) {
   const validation = [];
 
-  if(isEmpty(title) || title.length < 1) {
+  if (isEmpty(title) || title.length < 1) {
     validation.push({
       field: 'title',
       error: 'Titill þarf að vera amk 1 stafur',
     });
   }
-  if(!isEmpty(title) && title.length > 255) {
+  if (!isEmpty(title) && title.length > 255) {
     validation.push({
       field: 'title',
       error: 'Titill má að hámarki vera 255 stafir',
     });
   }
 
-  if(isEmpty(number) || !isPosInt(number)) {
+  if (isEmpty(number) || !isPosInt(number)) {
     validation.push({
       field: 'number',
       error: 'Number þarf að vera til staðar og verður að vera jákvæð heiltala',
@@ -111,10 +105,6 @@ router.get(
         },
       },
     };
-    console.log(
-      `tvRouting.js: /tv/:id/season seasons.rows.length --> ${seasons.rows.length}`,
-    );
-    console.log(`tvRouting.js: /tv/:id/season limit --> ${limit}`);
 
     if (offset > 0) {
       result.links.prev = {
@@ -143,17 +133,19 @@ router.post(
   '/tv/:id/season',
   requireAdminAuthentication,
   validationMiddlewareId,
-  //validationMiddlewareSeason,
+  // validationMiddlewareSeason,
   xssSanitizationId,
-  //xssSanitizationSeason,
-  //catchErrors(validationCheck),
+  // xssSanitizationSeason,
+  // catchErrors(validationCheck),
 
   async (req, res, next) => {
     // console.log(`tvRouting.js: /tv/:id/season post req.body --> ${req.body}`);
     await withMulter(req, res, next);
 
-    const { title, number, first_aired, description } = req.body;
-    const val = {title, number};
+    const {
+      title, number, first_aired, description,
+    } = req.body;
+    const val = { title, number };
 
     const validations = await validationMiddlewareSeason(val);
     catchErrors(validationCheck);
@@ -169,7 +161,7 @@ router.post(
         errors: valid,
       });
     }
-    const isset = f => typeof f === 'string' || typeof f === 'number';
+    const isset = (f) => typeof f === 'string' || typeof f === 'number';
     const seasonData = [
       isset(title) ? xss(title) : null,
       isset(number) ? xss(number) : null,
@@ -210,9 +202,6 @@ router.get(
   catchErrors(validationCheck),
 
   async (req, res) => {
-    // console.log(`tvSeason.js: /tv/:id/season/:season GET req.url --> ${JSON.stringify(req.url)}`);
-    // console.log(`tvSeason.js: /tv/:id/season/:season GET req.params --> ${JSON.stringify(req.params)}`);
-
     let { offset = 0, limit = 10 } = req.query;
     offset = Number(offset);
     limit = Number(limit);
