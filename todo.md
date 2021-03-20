@@ -42,12 +42,12 @@ Aldrei skal skila eða sýna hash fyrir lykilorð.
 ### Sjónvarpsþættir og notendur
 
 - `/tv/:id/rate`
-  - `POST`, skráir einkunn innskráðs notanda á sjónvarpsþætti, aðeins fyrir innskráða notendur
-  - `PATCH`, uppfærir einkunn innskráðs notanda á sjónvarpsþætti
+  - `POST`, skráir einkunn innskráðs notanda á sjónvarpsþætti, aðeinsfyrir innskráða notendur <komið>
+  - `PATCH`, uppfærir einkunn innskráðs notanda á sjónvarpsþætti<komið>
   - `DELETE`, eyðir einkunn innskráðs notanda á sjónvarpsþætti
 - `/tv/:id/state`
-  - `POST`, skráir stöðu innskráðs notanda á sjónvarpsþætti, aðeins fyrir innskráða notendur
-  - `PATCH`, uppfærir stöðu innskráðs notanda á sjónvarpsþætti
+  - `POST`, skráir stöðu innskráðs notanda á sjónvarpsþætti, aðeins fyrir innskráða notendur <komið>
+  - `PATCH`, uppfærir stöðu innskráðs notanda á sjónvarpsþætti <komið>
   - `DELETE`, eyðir stöðu innskráðs notanda á sjónvarpsþætti
-- `/tv/:id`
-  - Ef notandi er innskráður skal sýna einkunn og stöðu viðkomandi á sjónvarpsþætti.
+- `/tv/:id` <komið>
+  - Ef notandi er innskráður skal sýna einkunn og stöðu viðkomandi á sjónvarpsþætti. <komið>
