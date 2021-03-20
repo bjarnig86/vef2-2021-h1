@@ -6,15 +6,25 @@ import dotenv from 'dotenv';
 import xss from 'xss';
 import { param, body, validationResult } from 'express-validator';
 import { query } from './db.js';
+import { withMulter } from './image.js';
+import { createImageURL } from './image.js';
+import bodyParser from 'body-parser';
 
 import {
   requireAdminAuthentication,
   requireAuthentication,
 } from './usercontrol.js';
-
+const app = express();
 export const router = express.Router();
-
 router.use(express.json());
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+function isEmpty(s) {
+if (typeof s === 'undefined') return true;
+  return s != null && !s;
+}
 
 /**
  * Higher-order fall sem umlykur async middleware með villumeðhöndlun.
@@ -66,30 +76,55 @@ router.get('/tv', async (req, res, next) => {
   res.json(result);
 });
 
-const validationMiddlewareTVShow = [
-  body('title')
-    .isLength({ min: 1 })
-    .withMessage('Titill þarf að vera amk 1 stafur'),
-  body('title')
-    .isLength({ max: 128 })
-    .withMessage('Titill má að hámarki vera 128 stafir'),
-  body('tagline')
-    .isLength({ max: 128 })
-    .withMessage('Tagline má að hámarki vera 128 stafir'),
-  body('description')
-    .isLength({ max: 400 })
-    .withMessage('Description má að hámarki vera 400 stafir'),
-  body('language')
-    .isLength({ max: 2 })
-    .withMessage('Language er táknað með tveimur bókstöfum'),
-  body('network')
-    .isLength({ max: 40 })
-    .withMessage('Network má að hámarki vera 40 stafir'),
-  body('webpage')
-    .isLength({ max: 255 })
-    .withMessage('Webpage má að hámarki vera 255 stafir'),
-  body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
-];
+/**
+ * validerar post gögn frá /tv
+ * @param {*} param0 
+ */
+async function validationMiddlewareTVShow(
+  {title, tagline, language, network, webpage} = {}
+) {
+  const validation = [];
+
+  if(isEmpty(title) || title.length < 1) {
+    validation.push({
+      field: 'title',
+      error: 'Titill þarf að vera amk 1 stafur',
+    });
+  }
+  if(!isEmpty(title) && title.length > 255) {
+    validation.push({
+      field: 'title',
+      error: 'Titill má að hámarki vera 255 stafir',
+    });
+  }
+  if(!isEmpty(tagline) && tagline.length > 255) {
+    validation.push({
+      field: 'tagline',
+      error: 'Tagline má að hámarki vera 255 stafir',
+    });
+  }
+  if(isEmpty(language) || language.length !== 2) {
+    validation.push({
+      field: 'language',
+      error: 'Language þarf að vera til staðar og er táknað með tveimur bókstöfum',
+    });
+  }
+  if(!isEmpty(network) && network.length > 255) {
+    validation.push({
+      field: 'network',
+      error: 'Network má að hámarki vera 255 stafir',
+    });
+  }
+  if(!isEmpty(webpage) && webpage.length > 255) {
+    validation.push({
+      field: 'webpage',
+      error: 'Webpage má að hámarki vera 255 stafir',
+    });
+  }
+
+  return validation;
+}
+
 const validationMiddlewareTVShowPatch = [
   body('title')
     .isLength({ min: 1 })
@@ -145,7 +180,7 @@ const xssSanitizationId = [
 
 async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
-  // console.log('validation :>> ', validation);
+   console.log('validation :>> ', validation);
 
   if (!validation.isEmpty()) {
     return res.json({ errors: validation.errors });
@@ -169,39 +204,59 @@ async function validationCheck(req, res, next) {
 router.post(
   '/tv',
   requireAdminAuthentication,
-  validationMiddlewareTVShow,
-  xssSanitizationTVShow,
-  catchErrors(validationCheckTVShow),
+
 
   async (req, res, next) => {
+
+    //const [image, req1] = await imageWithMulter(req, res, next);
+    await withMulter(req, res, next);
     const {
       title,
       first_aired,
       in_production,
       tagline,
-      image,
       description,
       language,
       network,
       webpage,
     } = req.body;
 
+    const val = {title, tagline, language, network, webpage};
+
+    const validations = await validationMiddlewareTVShow(val);
+    catchErrors(validationCheckTVShow);
+    if (validations.length > 0) {
+      return res.status(400).json({
+        errors: validations,
+      });
+    }
+    const [image, valid] = await createImageURL(req, res, next);
+    if (valid.length > 0) {
+      return res.status(400).json({
+        errors: valid,
+      });
+    }
+
+    console.log("Mynd" + image + "routing");
+
+    const isset = f => typeof f === 'string' || typeof f === 'number';
     const showData = [
-      title,
-      first_aired,
-      in_production,
-      tagline,
+      isset(title) ? xss(title) : null,
+      isset(first_aired) ? xss(first_aired) : null,
+      isset(in_production) ? xss(in_production) : null,
+      isset(tagline) ? xss(tagline) : null,
       image,
-      description,
-      language,
-      network,
-      webpage,
+      isset(description) ? xss(description) : null,
+      isset(language) ? xss(language) : null,
+      isset(network) ? xss(network) : null,
+      isset(webpage) ? xss(webpage) : null,
     ];
+    
 
     const q = `INSERT INTO shows 
   (title, first_aired, in_production, tagline, image, description, language, network, webpage) 
   VALUES
-  ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
+  ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
 
     const result = await query(q, showData);
 
@@ -331,3 +386,5 @@ router.delete(
     return res.json(result);
   },
 );
+
+

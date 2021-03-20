@@ -59,25 +59,6 @@ async function importGenres(rows) {
     });
   });
 
-
-  /*const inserts = genres.map(c => query(q, [c]));
-
-  // inserta öllu og bíða
-  const results = await Promise.all(inserts);
-
-  const mapped = {};
-
-  // skila á forminu { NAFN: id, .. } svo það sé auðvelt að fletta upp
-  results.forEach((r) => {
-    const [{
-      id,
-      title,
-    }] = r.rows;
-
-    mapped[title] = id;
-  });
-
-  return mapped;*/
 }
 
 async function importShow(row) {

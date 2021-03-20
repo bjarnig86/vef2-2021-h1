@@ -4,12 +4,16 @@ import dotenv from 'dotenv';
 import { router as userRouter } from './usercontrol.js';
 import { router as tvRouter } from './tvRouting.js';
 import { router as tvSeasonRouter } from './tvSeason.js';
+import bodyParser from 'body-parser';
 
 dotenv.config();
 
 const { PORT: port = 3000 } = process.env;
 
 const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+//app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
   res.json({

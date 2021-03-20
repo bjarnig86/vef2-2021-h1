@@ -53,14 +53,16 @@ CREATE TABLE seasons (
 
 
 CREATE TABLE episodes (
-  id serial primary key,
+  id serial,
   title varchar(255) NOT NULL,
   number smallint NOT NULL CHECK (number > 0),
   first_aired date,
   description text,
   season integer,
   show integer,
-  FOREIGN KEY(show, season) REFERENCES seasons ON DELETE CASCADE
+  FOREIGN KEY(show, season) REFERENCES seasons ON DELETE CASCADE,
+  PRIMARY KEY (show, season, number)
+  --breyta primary key í show, season, episode
 );
 
 
