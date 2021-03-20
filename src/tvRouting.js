@@ -236,7 +236,7 @@ router.post(
     console.log("Mynd" + image + "routing");
 
     const isset = f => typeof f === 'string' || typeof f === 'number';
-    
+
     const showData = [
       isset(title) ? xss(title) : null,
       isset(first_aired) ? xss(first_aired) : null,
@@ -299,17 +299,18 @@ router.get('/tv/:id', requireAuthentication, async (req, res) => {
 router.patch(
   '/tv/:id',
   requireAdminAuthentication,
-  validationMiddlewareTVShowPatch,
-  xssSanitizationTVShow,
-  catchErrors(validationCheckTVShow),
+  validationMiddlewareId,
+  //validationMiddlewareTVShowPatch,
+  //xssSanitizationTVShow,
+  //catchErrors(validationCheckTVShow),
 
   async (req, res, next) => {
+    await withMulter(req, res, next);
     const {
       title,
       first_aired,
       in_production,
       tagline,
-      image,
       description,
       language,
       network,
@@ -317,17 +318,34 @@ router.patch(
     } = req.body;
 
     const { id } = req.params;
+    const val = {title, tagline, language, network, webpage};
+    
+    const validations = await validationMiddlewareTVShow(val);
+    catchErrors(validationCheckTVShow);
+    if (validations.length > 0) {
+      return res.status(400).json({
+        errors: validations,
+      });
+    }
+
+    const [image, valid] = await createImageURL(req, res, next);
+    if (valid.length > 0) {
+      return res.status(400).json({
+        errors: valid,
+      });
+    }
+    const isset = f => typeof f === 'string' || typeof f === 'number';
 
     const showData = [
-      title,
-      first_aired,
-      in_production,
-      tagline,
+      isset(title) ? xss(title) : null,
+      isset(first_aired) ? xss(first_aired) : null,
+      isset(in_production) ? xss(in_production) : null,
+      isset(tagline) ? xss(tagline) : null,
       image,
-      description,
-      language,
-      network,
-      webpage,
+      isset(description) ? xss(description) : null,
+      isset(language) ? xss(language) : null,
+      isset(network) ? xss(network) : null,
+      isset(webpage) ? xss(webpage) : null,
       id,
     ];
 
