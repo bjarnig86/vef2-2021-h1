@@ -17,6 +17,7 @@ import {
 export const router = express.Router();
 
 router.use(express.json());
+router.use(express.urlencoded({ extended: true }));
 
 /**
  * Higher-order fall sem umlykur async middleware með villumeðhöndlun.

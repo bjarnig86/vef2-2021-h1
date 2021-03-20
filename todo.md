@@ -15,10 +15,10 @@
   - `DELETE`, eyðir season, aðeins ef notandi er stjórnandi <komið>
 - `/tv/:id/season/:id/episode/` <komið>
   - `POST` býr til nýjan þátt í season, aðeins ef notandi er stjórnandi
-- `/tv/:id/season/:id/episode/:id` <Bjarni>
+- `/tv/:id/season/:id/episode/:id` <komið>
   - `GET` skilar upplýsingum um þátt
   - `DELETE`, eyðir þætti, aðeins ef notandi er stjórnandi
-- `/genres` <>
+- `/genres` <Komið>
   - `GET` skilar síðu af tegundum (genres)
   - `POST` býr til tegund, aðeins ef notandi er stjórnandi
 
