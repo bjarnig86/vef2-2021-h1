@@ -302,7 +302,8 @@ router.patch(
 
 /**
  * /tv/:id DELETE,
- * eyðir sjónvarpsþátt, aðeins ef notandi er stjórnandi
+ * eyðir sjónvarpsþátt,
+ * aðeins ef notandi er stjórnandi
  */
 router.delete(
   '/tv/:id',
@@ -311,7 +312,7 @@ router.delete(
   xssSanitizationId,
   catchErrors(validationCheck),
 
-  async (req, res, next) => {
+  async (req, res) => {
     const result = await query(`DELETE FROM shows WHERE id = ${req.params.id}`);
     return res.json(result);
   },
