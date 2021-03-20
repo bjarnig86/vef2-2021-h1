@@ -1,5 +1,5 @@
 import xss from 'xss';
-import { param, body, validationResult } from 'express-validator';
+import { param, validationResult } from 'express-validator';
 
 /**
  * Higher-order fall sem umlykur async middleware með villumeðhöndlun.
