@@ -1,11 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import xss from 'xss';
-import {
-  isLoggedIn,
-  requireAdminAuthentication,
-  requireAuthentication,
-} from './usercontrol.js';
+import { requireAuthentication } from './usercontrol.js';
 import { query } from './db.js';
 import { findByUserIdAndShowId } from './users.js';
 
@@ -67,7 +62,7 @@ router.delete('/tv/:id/rate', requireAuthentication, async (req, res) => {
   const userQuery = await findByUserIdAndShowId(userId, tvId);
 
   if (userQuery.rating === null) {
-    res.status(400).json({ message: 'No rating to delete' });
+    return res.status(400).json({ message: 'No rating to delete' });
   }
 
   const data = [null, userQuery.id];
@@ -127,8 +122,8 @@ router.delete('/tv/:id/state', requireAuthentication, async (req, res) => {
 
   const userQuery = await findByUserIdAndShowId(userId, tvId);
 
-  if (userQuery.rating === null) {
-    res.status(400).json({ message: 'No status to delete' });
+  if (userQuery.status === null) {
+    return res.status(400).json({ message: 'No status to delete' });
   }
 
   const data = [null, userQuery.id];
