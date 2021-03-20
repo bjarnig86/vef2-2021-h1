@@ -33,9 +33,15 @@ function catchErrors(fn) {
   return (req, res, next) => fn(req, res, next).catch(next);
 }
 
-/* get á /tv - `GET` skilar síðum af sjónvarpsþáttum með grunnupplýsingum, 
-fylki af flokkum, fylki af seasons, meðal einkunn sjónvarpsþáttar, 
-fjölda einkunna sem hafa verið skráðar fyrir sjónvarpsþátt */
+/**
+ * /tv - GET
+ * skilar síðum af sjónvarpsþáttum
+ * með grunnupplýsingum,
+ * fylki af flokkum,
+ * fylki af seasons,
+ * meðal einkunn sjónvarpsþáttar,
+ * fjölda einkunna sem hafa verið skráðar fyrir sjónvarpsþátt
+ */
 router.get('/tv', isLoggedIn, async (req, res) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
