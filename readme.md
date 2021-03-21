@@ -76,11 +76,11 @@ Fyrst:
 
 Þar sem á að gera aðgerð:
 
---> Authorization
+* Authorization
 
-  --> Velja `Bearer Token`
+  - Velja `Bearer Token`
 
-  --> kópera `token` sem var skilað úr login
+  - kópera `token` sem var skilað úr login
 
 * https://hopedihop1.herokuapp.com/tv
 
