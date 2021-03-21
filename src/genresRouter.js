@@ -25,11 +25,14 @@ router.get('/genres', async (req, res) => {
       ORDER BY id ASC OFFSET $1 LIMIT $2;`;
 
   const genres = await query(q, [offset, limit]);
+  const titles = [];
+
+  genres.rows.map((row) => titles.push({ name: row.title }));
 
   const result = {
     limit,
     offset,
-    items: genres.rows,
+    items: titles,
     links: {
       self: {
         href: `${baseUrl}${path}?offset=${offset}&limit=${limit}`,
@@ -67,5 +70,5 @@ router.post(
     const result = await query(q, [title]);
 
     return res.json(result);
-  },
+  }
 );
