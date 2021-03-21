@@ -14,6 +14,10 @@ export const router = express.Router();
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
 
+/**
+ * /genres GET,
+ * skilar síðu af tegundum (genres)
+ */
 router.get('/genres', async (req, res) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
@@ -54,6 +58,11 @@ router.get('/genres', async (req, res) => {
   res.json(result);
 });
 
+/**
+ * /genres POST,
+ * býr til tegund,
+ * aðeins ef notandi er stjórnandi
+ */
 router.post(
   '/genres',
   requireAdminAuthentication,

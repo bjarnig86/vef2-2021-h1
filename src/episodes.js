@@ -64,6 +64,11 @@ async function validationCheckEpisode(req, res, next) {
   return next();
 }
 
+/**
+ * /tv/:id/season/:season/episode/ POST,
+ * býr til nýjan þátt í season,
+ * aðeins ef notandi er stjórnandi
+ */
 router.post(
   '/tv/:id/season/:season/episode/',
   requireAdminAuthentication,
@@ -90,6 +95,10 @@ router.post(
   },
 );
 
+/**
+ * /tv/:id/season/:season/episode/:episode GET,
+ * Skilar  skilar upplýsingum um þátt
+ */
 router.get('/tv/:id/season/:season/episode/:episode', async (req, res) => {
   const q = `SELECT * FROM episodes
     WHERE show = $1 AND season = $2 AND number = $3;`;
