@@ -211,3 +211,22 @@ await importSeasons().catch((err) => {
 await importEpisodes().catch((err) => {
   console.error('Error importing', err);
 });
+
+
+/**
+ * Keyrir inn rate og state á user bjarniCool
+ */
+
+async function insertRateAndState() {
+  const q1 = `INSERT INTO users_shows (show, "user", rating, status) VALUES (1, 2, 3, 'Er að horfa')`
+  const q2 = `INSERT INTO users_shows (show, "user", rating, status) VALUES (2, 2, 4, 'Langar að horfa')`
+  const q3 = `INSERT INTO users_shows (show, "user", rating, status) VALUES (1, 2, 3, 'Hef horft')`
+  query(q1);
+  query(q2);
+  query(q3);
+  console.info('Finished Insert Rate & State');
+}
+
+await insertRateAndState().catch((err) => {
+  console.error('Error importing', err);
+});
