@@ -92,7 +92,7 @@ router.post(
     const result = await query(q, episodeData);
 
     return res.json(result);
-  },
+  }
 );
 
 /**
@@ -109,7 +109,11 @@ router.get('/tv/:id/season/:season/episode/:episode', async (req, res) => {
     req.params.episode,
   ]);
 
-  res.json(episodes.rows[0]);
+  if (episodes.rowCount === 0) {
+    return res.status(404).json({ error: 'Episode not found' });
+  }
+
+  return res.json(episodes.rows[0]);
 });
 
 /**
@@ -134,5 +138,5 @@ router.delete(
       RETURNING *;`);
 
     res.json(result);
-  },
+  }
 );
