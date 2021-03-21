@@ -1,5 +1,3 @@
-/* eslint-disable object-curly-newline */
-/* eslint-disable camelcase */
 import express from 'express';
 import dotenv from 'dotenv';
 import xss from 'xss';
@@ -126,16 +124,14 @@ router.post(
   '/tv/:id/season',
   requireAdminAuthentication,
   validationMiddlewareId,
-  // validationMiddlewareSeason,
   xssSanitizationId,
-  // xssSanitizationSeason,
-  // catchErrors(validationCheck),
 
   async (req, res, next) => {
-    // console.log(`tvRouting.js: /tv/:id/season post req.body --> ${req.body}`);
     await withMulter(req, res, next);
 
-    const { title, number, first_aired, description } = req.body;
+    const {
+      title, number, first_aired, description,
+    } = req.body;
     const val = { title, number };
 
     const validations = await validationMiddlewareSeason(val);
@@ -161,8 +157,6 @@ router.post(
       image,
       req.params.id,
     ];
-
-    // console.log(`tvRouting.js: /tv/:id/season post seasonData --> ${seasonData}`);
 
     const q = `INSERT INTO seasons (
       title,

@@ -1,7 +1,3 @@
-/* eslint-disable object-curly-newline */
-/* eslint-disable operator-linebreak */
-/* eslint-disable camelcase */
-
 import express from 'express';
 import xss from 'xss';
 import { body, validationResult } from 'express-validator';
@@ -25,21 +21,18 @@ function catchErrors(fn) {
 }
 
 const validationEpisode = [
-  //   body('id').isNumeric().withMessage('id þarf að vera tala'),
   body('title')
     .isLength({ max: 255 })
     .withMessage('Nafn þáttar má að hámarki vera 255 stafir'),
   body('number')
     .isLength({ max: 10 })
     .withMessage('Númer þáttar má að hámarki vera 10 stafa tala'),
-  //   body('first_aired')
-  //     .isDate()
-  //     .withMessage('Dagsetning þarf að vera á réttu formi'),
+  body('first_aired')
+    .isDate('yyyy-mm-dd')
+    .withMessage('Dagsetning þarf að vera á réttu formi (yyyy-mm-dd)'),
   body('description')
     .isLength({ max: 400 })
     .withMessage('Description má að hámarki vera 400 stafir'),
-  //   body('season').isNumeric().withMessage('Season þarf að vera tala'),
-  //   body('show').isNumeric().withMessage('Show þarf að vera tala'),
 ];
 
 const xssSanitizationEpisode = [
@@ -74,7 +67,9 @@ router.post(
   xssSanitizationEpisode,
   catchErrors(validationCheckEpisode),
   async (req, res) => {
-    const { title, number, first_aired, description } = req.body;
+    const {
+      title, number, first_aired, description,
+    } = req.body;
 
     const { id, season } = req.params;
 
@@ -121,7 +116,6 @@ router.get('/tv/:id/season/:season/episode/:episode', async (req, res) => {
 router.delete(
   '/tv/:id/season/:season/episode/:episode',
   requireAdminAuthentication,
-  validationEpisode,
   xssSanitizationEpisode,
   catchErrors(validationCheckEpisode),
 

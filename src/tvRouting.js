@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import express from 'express';
 import dotenv from 'dotenv';
 import xss from 'xss';
@@ -395,7 +393,7 @@ router.patch(
 router.delete(
   '/tv/:id',
   requireAdminAuthentication,
-  validationMiddlewareId, // er ekki allt þetta validation/sanitization óþarfi í delete?
+  validationMiddlewareId,
   xssSanitizationId,
   catchErrors(validationCheck),
 

@@ -21,5 +21,8 @@ module.exports = {
 
     // Leyfum console.info, warn og error
     'no-console': ['error', { allow: ['info', 'warn', 'error'] }],
+
+    // Leyfum ákveðin orð án camelCase
+    camelcase: ['error', { allow: ['first_aired', 'in_production'] }],
   },
 };

@@ -1,4 +1,3 @@
-/* eslint-disable operator-linebreak */
 import express from 'express';
 import dotenv from 'dotenv';
 import { body, param } from 'express-validator';
@@ -44,8 +43,7 @@ router.post(
 
     const data = [tvId, userId, rating];
     if (!userQuery || userQuery === null) {
-      const q =
-        'INSERT INTO users_shows (show, "user", rating) VALUES ($1, $2, $3)';
+      const q = 'INSERT INTO users_shows (show, "user", rating) VALUES ($1, $2, $3)';
       const result = await query(q, data);
       return res.json(result);
     }
@@ -133,8 +131,7 @@ router.post(
     const data = [tvId, userId, status];
 
     if (!userQuery || userQuery === null) {
-      const q =
-        'INSERT INTO users_shows (show, "user", status) VALUES ($1, $2, $3)';
+      const q = 'INSERT INTO users_shows (show, "user", status) VALUES ($1, $2, $3)';
       const result = await query(q, data);
       return res.json(result);
     }
