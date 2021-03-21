@@ -32,32 +32,32 @@ Sett upp á Heroku app sem [hopedihop1](https://hopedihop1.herokuapp.com/)
 ## Dæmi um köll í vefþjónustu
 
 ### Sem óinnskráður notandi:
---> http://<grunnsíða>/tv
+* https://hopedihop1.herokuapp.com/tv
 
 GET - mun skila síðum af sjónvarpsþáttum með grunnupplýsingum
 
---> http://<grunnsíða>/tv/2/season
+* https://hopedihop1.herokuapp.com/tv/2/season
 
 GET - mun skila öllum seasons í sjónvarpsþætti með id 2
 
 ### Sem innskráður notandi:
-Fyrst:
+* Fyrst:
 
---> http://<grunnsíða>/users/login
+* https://hopedihop1.herokuapp.com/users/login
 
 `{"username": "bjarnicool", "password": "123"}`
 
-Skilar token 
+- Skilar token 
 
-Þar sem á að gera aðgerð:
+* Þar sem á að gera aðgerð:
 
---> Authorization
+* Authorization
 
-  --> Velja `Bearer Token`
+  - Velja `Bearer Token`
 
-  --> kópera `token` sem var skilað úr login
+  - kópera `token` sem var skilað úr login
 
---> http://<grunnsíða>/tv/4/rate
+* https://hopedihop1.herokuapp.com/tv/4/rate
 
 `{"rating": "5"}`
 
@@ -70,7 +70,7 @@ DELETE - eyðir einkunn notanda fyrir sjónvarpsþátt með id 4
 ### Sem admin:
 Fyrst:
 
---> http://<grunnsíða>/users/login
+* https://hopedihop1.herokuapp.com/users/login
 
 `{"username": "admin", "password": "123"}`
 
@@ -82,20 +82,20 @@ Fyrst:
 
   --> kópera `token` sem var skilað úr login
 
---> http://<grunnsíða>/tv
+* https://hopedihop1.herokuapp.com/tv
 
 POST með form-data:
 
 KEY og VALUE þar sem skrá er sett inn með því að velja File undir KEY
 
 t.d.  
-  Title - Why Women Kill
+  - Title - Why Women Kill
 
-  Language - en
+  - Language - en
 
-  Image - mynd.jpg (velja File)
+  - Image - mynd.jpg (velja File)
 
-  First_aired - 05-03-2020
+  - First_aired - 05-03-2020
 
 Mun setja í gagnagrunninn ofangreindar upplýsingar, þar sem mynd.jpg er geymd á cloudinary og url á hana sett undir Image
 
