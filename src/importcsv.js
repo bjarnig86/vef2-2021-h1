@@ -200,6 +200,11 @@ async function importEpisodes() {
   console.info('Finished Episodes');
 }
 
+/* await þarf að að vera fyrir framan þessi tvö köll til 
+þess að gögnin fari inn í töflurnar í réttri röð, 
+annars koma "violates foreign key constraint" villur */
+
+/*eslint-disable */ 
 await importSeries().catch((err) => {
   console.error('Error importing', err);
 });
@@ -208,10 +213,10 @@ await importSeasons().catch((err) => {
   console.error('Error importing', err);
 });
 
-await importEpisodes().catch((err) => {
+importEpisodes().catch((err) => {
   console.error('Error importing', err);
 });
-
+/*eslint-enable */
 
 /**
  * Keyrir inn rate og state á user bjarniCool

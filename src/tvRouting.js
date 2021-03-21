@@ -330,7 +330,6 @@ router.get('/tv/:id', isLoggedIn, async (req, res) => {
 
   const getSeasons = 'SELECT * FROM seasons WHERE show = $1;';
   const showSeasons = await query(getSeasons, [id]);
-  console.log('showSeasons :>> ', showSeasons);
 
   if (user) {
     const userShowRateState = await findByUserIdAndShowId(user.id, id);
