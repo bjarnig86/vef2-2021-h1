@@ -1,11 +1,12 @@
+/* eslint-disable operator-linebreak */
 import express from 'express';
 import dotenv from 'dotenv';
+import { body, param } from 'express-validator';
+import xss from 'xss';
 import { requireAuthentication } from './usercontrol.js';
 import { query } from './db.js';
 import { findByUserIdAndShowId } from './users.js';
-import { body, param } from 'express-validator';
 import { catchErrors, validationCheck } from './utils.js';
-import xss from 'xss';
 
 dotenv.config();
 
@@ -20,7 +21,7 @@ const validateRate = [
 const xssSanitizationRate = [param('rating').customSanitizer((v) => xss(v))];
 const xssSanitizationState = [param('status').customSanitizer((v) => xss(v))];
 
- /**
+/**
  * /tv/:id/rate POST,
  * skráir einkunn innskráðs notanda á sjónvarpsþætti, aðeins fyrir innskráða notendur
  */
@@ -55,10 +56,10 @@ router.post(
       return res.json(result);
     }
     return res.status(401).json({ error: 'Already posted rating' });
-  }
+  },
 );
 
- /**
+/**
  * /tv/:id/rate PATCH,
  * uppfærir einkunn innskráðs notanda á sjónvarpsþætti
  */
@@ -84,7 +85,7 @@ router.patch(
 
     const result = await query(q, data);
     return res.json(result);
-  }
+  },
 );
 
 /**
@@ -113,7 +114,7 @@ router.delete('/tv/:id/rate', requireAuthentication, async (req, res) => {
  * aðeins fyrir innskráða notendur
  */
 
-  router.post(
+router.post(
   '/tv/:id/state',
   requireAuthentication,
   xssSanitizationState,
@@ -143,7 +144,7 @@ router.delete('/tv/:id/rate', requireAuthentication, async (req, res) => {
       return res.json(result);
     }
     return res.status(401).json({ error: 'Already posted status' });
-  }
+  },
 );
 
 /**
@@ -171,7 +172,7 @@ router.patch(
 
     const result = await query(q, data);
     return res.json(result);
-  }
+  },
 );
 
 /**

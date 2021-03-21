@@ -92,7 +92,7 @@ router.post(
     const result = await query(q, episodeData);
 
     return res.json(result);
-  }
+  },
 );
 
 /**
@@ -138,5 +138,5 @@ router.delete(
       RETURNING *;`);
 
     res.json(result);
-  }
+  },
 );

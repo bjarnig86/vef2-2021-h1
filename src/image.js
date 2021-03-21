@@ -1,13 +1,11 @@
+/* eslint-disable function-paren-newline */
+/* eslint-disable implicit-arrow-linebreak */
 import cloudinary from 'cloudinary';
 import multer from 'multer';
 import fs from 'fs';
 import util from 'util';
 
-const MIMETYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-];
+const MIMETYPES = ['image/jpeg', 'image/png', 'image/gif'];
 
 const readdir = util.promisify(fs.readdir);
 const unlink = util.promisify(fs.unlink);
@@ -25,25 +23,42 @@ function validateImageMimetype(mimetype) {
  */
 export function withMulter(req, res, next) {
   return new Promise((resolve, reject) => {
-    multer({ dest: './temp' })
-      .single('image')(req, res, (err) => {
-        if (err) {
-          if (err.message === 'Unexpected field') {
-            const errors = [{
+    // eslint-disable-next-line consistent-return
+    multer({ dest: './temp' }).single('image')(req, res, (err) => {
+      if (err) {
+        if (err.message === 'Unexpected field') {
+          const errors = [
+            {
               field: 'image',
               error: 'Unable to read image',
-            }];
-            reject(err);
-            return res.status(400).json({ errors });
-          }
-          return next(err);
+            },
+          ];
+          reject(err);
+          return res.status(400).json({ errors });
         }
-        console.log('check');
+        return next(err);
+      }
 
-        resolve(req, res, next);
+      resolve(req, res, next);
       // resolve(createImageURL(req, res, next));
-      });
+    });
   });
+}
+
+/**
+ * Hendir temp file-um úr temp directory
+ */
+// eslint-disable-next-line consistent-return
+async function deleteTemp() {
+  try {
+    const files = await readdir(directory);
+    const unlinkPromises = files.map((filename) =>
+      unlink(`${directory}/${filename}`),
+    );
+    return Promise.all(unlinkPromises);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /**
@@ -56,7 +71,6 @@ export async function createImageURL(req, res, next) {
   const { file: { path, mimetype } = {} } = req;
   const validations = [];
   const hasImage = Boolean(path && mimetype);
-  console.log(hasImage);
   let image = '';
   if (!hasImage) {
     validations.push({
@@ -69,8 +83,9 @@ export async function createImageURL(req, res, next) {
     if (!validateImageMimetype(mimetype)) {
       validations.push({
         field: 'image',
-        error: `Mimetype ${mimetype} is not legal. `
-               + `Only ${MIMETYPES.join(', ')} are accepted`,
+        error:
+          `Mimetype ${mimetype} is not legal. `
+          + `Only ${MIMETYPES.join(', ')} are accepted`,
       });
       return [image, validations];
     }
@@ -84,10 +99,12 @@ export async function createImageURL(req, res, next) {
       // Skilum áfram villu frá Cloudinary, ef einhver
       if (error.http_code && error.http_code === 400) {
         return res.status(400).json({
-          errors: [{
-            field: 'image',
-            error: error.message,
-          }],
+          errors: [
+            {
+              field: 'image',
+              error: error.message,
+            },
+          ],
         });
       }
       console.error('Unable to upload file to cloudinary');
@@ -96,24 +113,10 @@ export async function createImageURL(req, res, next) {
 
     if (upload && upload.secure_url) {
       image = upload.secure_url;
-      console.log(image);
     } else {
       return next(new Error('Cloudinary upload missing secure_url'));
     }
   }
   deleteTemp();
   return [image, validations];
-}
-
-/**
- * Hendir temp file-um úr temp directory
- */
-async function deleteTemp() {
-  try {
-    const files = await readdir(directory);
-    const unlinkPromises = files.map(filename => unlink(`${directory}/${filename}`));
-    return Promise.all(unlinkPromises);
-  } catch(err) {
-    console.log(err);
-  }
 }

@@ -48,12 +48,11 @@ async function validateUser({ username, password, name }, patch = false) {
 
   // can't patch username
   if (!patch) {
-    const m =
-      'Username is required, must be at least three letters and no more than 32 characters';
+    const m = 'Username is required, must be at least three letters and no more than 32 characters';
     if (
-      typeof username !== 'string' ||
-      username.length < 3 ||
-      username.length > 32
+      typeof username !== 'string'
+      || username.length < 3
+      || username.length > 32
     ) {
       validationMessages.push({ field: 'username', message: m });
     }
@@ -135,8 +134,7 @@ export function requireAuthentication(req, res, next) {
     }
 
     if (!user) {
-      const error =
-        info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
+      const error = info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
 
       return res.status(401).json({ error });
     }
@@ -154,8 +152,7 @@ export function requireAdminAuthentication(req, res, next) {
     }
 
     if (!user) {
-      const error =
-        info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
+      const error = info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
 
       return res.status(401).json({ error });
     }
@@ -175,7 +172,7 @@ export function isLoggedIn(req, res, next) {
     return next();
   }
 
-  return passport.authenticate('jwt', { session: false }, (err, user, info) => {
+  return passport.authenticate('jwt', { session: false }, (err, user) => {
     if (err) {
       return false;
     }
@@ -261,22 +258,21 @@ router.patch('/users/me', requireAuthentication, async (req, res) => {
   if (email !== undefined && password !== undefined) {
     const hashedPassword = await hashPassword(password);
     await query(
-      `UPDATE users SET (email, password) = ('${email}', '${hashedPassword}') WHERE id = ${id}`
+      `UPDATE users SET (email, password) = ('${email}', '${hashedPassword}') WHERE id = ${id}`,
     );
     return res.json({ message: 'User has been updated' });
-  } else if (email) {
+  } if (email) {
     await query(`UPDATE users SET email = '${email}' WHERE id = ${id}`);
     return res.json({ message: 'User has been updated' });
-  } else if (password) {
+  } if (password) {
     const hashedPassword = await hashPassword(password);
     await query(
-      `UPDATE users SET password = '${hashedPassword}' WHERE id = ${id}`
+      `UPDATE users SET password = '${hashedPassword}' WHERE id = ${id}`,
     );
     return res.json({ message: 'User has been updated' });
   }
   return res.json({ error: 'no input' });
 });
-
 
 /**
  * /users/:id GET,
@@ -342,7 +338,7 @@ router.post(
     const { id } = newUser;
 
     const data = {
-      id: id,
+      id,
       username: newUser.username,
       email: newUser.email,
       admin: newUser.admin,
@@ -353,10 +349,11 @@ router.post(
     if (id) {
       const payload = { id };
       const tokenOptions = { expiresIn: tokenLifetime };
+      // eslint-disable-next-line no-unused-vars  ---  Einar!?
       const token = jwt.sign(payload, jwtOptions.secretOrKey, tokenOptions);
       return res.json(data);
     }
 
     return res.status(401).json({ error: 'Could not register user ' });
-  }
+  },
 );

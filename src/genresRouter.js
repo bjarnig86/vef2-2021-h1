@@ -1,8 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { query } from './db.js';
 import { body } from 'express-validator';
 import xss from 'xss';
+import { query } from './db.js';
 
 import { requireAdminAuthentication } from './usercontrol.js';
 import { catchErrors, validationCheck } from './utils.js';
@@ -91,5 +91,5 @@ router.post(
     const result = await query(q, [title]);
 
     return res.json(result);
-  }
+  },
 );

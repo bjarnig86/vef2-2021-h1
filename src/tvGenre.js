@@ -1,3 +1,5 @@
+/* eslint-disable object-curly-newline */
+/* eslint-disable camelcase */
 import express from 'express';
 import xss from 'xss';
 import { body } from 'express-validator';
@@ -96,7 +98,7 @@ router.get(
     }
 
     res.json(result);
-  }
+  },
 );
 
 /**
@@ -140,7 +142,7 @@ router.post(
     const result = await query(q, seasonData);
 
     return res.json(result);
-  }
+  },
 );
 
 /**
@@ -204,7 +206,7 @@ router.get(
     }
 
     res.json(result);
-  }
+  },
 );
 
 /**
@@ -222,8 +224,8 @@ router.delete(
 
   async (req, res) => {
     const result = await query(
-      `DELETE FROM seasons WHERE show = ${req.params.id} AND number = ${req.params.season} `
+      `DELETE FROM seasons WHERE show = ${req.params.id} AND number = ${req.params.season} `,
     );
     return res.json(result);
-  }
+  },
 );
