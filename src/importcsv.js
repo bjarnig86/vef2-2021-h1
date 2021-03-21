@@ -63,7 +63,7 @@ async function importShow(row) {
     VALUES
       ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
 
-  const image = `res.cloudinary.com/dhartr5et/image/upload/v1614684283/vef2-2021-h1/${row.image}`;
+  const image = `https://res.cloudinary.com/dhartr5et/image/upload/v1614684283/vef2-2021-h1/${row.image}`;
 
   const values = [
     row.name,
@@ -92,7 +92,7 @@ async function importSeason(row) {
     VALUES
       ($1, $2, $3, $4, $5, $6)`;
 
-  const image = `res.cloudinary.com/dhartr5et/image/upload/v1614684283/vef2-2021-h1/${row.image}`;
+  const image = `https://res.cloudinary.com/dhartr5et/image/upload/v1614684283/vef2-2021-h1/${row.poster}`;
   let date = null;
   if (row.airDate === '') date = null;
   else date = row.airDate;
