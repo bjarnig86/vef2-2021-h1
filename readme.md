@@ -32,81 +32,56 @@ Sett upp á Heroku app sem [hopedihop1](https://hopedihop1.herokuapp.com/)
 ## Dæmi um köll í vefþjónustu
 
 ### Sem óinnskráður notandi:
-* https://hopedihop1.herokuapp.com/tv
+**/tv GET**
 
-GET - mun skila síðum af sjónvarpsþáttum með grunnupplýsingum
+Kallað með GET á slóðina https://hopedihop1.herokuapp.com/tv
+Skilar síðum af sjónvarpsþáttum með grunnupplýsingum.
 
 * https://hopedihop1.herokuapp.com/tv/2/season
 
 GET - mun skila öllum seasons í sjónvarpsþætti með id 2
 
 ### Sem innskráður notandi:
-* Fyrst:
+**Innskrá notanda**
 
-* https://hopedihop1.herokuapp.com/users/login
+Kallað með POST á slóðina https://hopedihop1.herokuapp.com/users/login
+Body á kallinu á að vera `{"username": "bjarnicool", "password": "123"}`
+Svar frá vefþjóninum inniheldur token.
 
-`{"username": "bjarnicool", "password": "123"}`
+**tv/:id/rate POST**
 
-- Skilar token 
-
-* Þar sem á að gera aðgerð:
-
-* Authorization
-
-  - Velja `Bearer Token`
-
-  - kópera `token` sem var skilað úr login
-
-* https://hopedihop1.herokuapp.com/tv/4/rate
-
-`{"rating": "5"}`
-
-POST - leyfir notanda að skrá einkunnina 5 fyrir sjónvarpsþátt með id 4
-
-PATCH - leyfir notanda að breyta einkunn fyrir sjónvarpsþátt með id 4
-
-DELETE - eyðir einkunn notanda fyrir sjónvarpsþátt með id 4
+Skráir rating á sjónvarpsþátt með tölugildið 1 - 5.
+Kallað með POST á slóðina https://hopedihop1.herokuapp.com/tv/4/rate
+Setja þarf token-ið sem kom úr login kallinu sem `Bearer Token` og setja `{"rating": "5"}` í body.
 
 ### Sem admin:
-Fyrst:
+**Innskrá admin notanda**
 
-* https://hopedihop1.herokuapp.com/users/login
+Kallað með POST á slóðina https://hopedihop1.herokuapp.com/users/login
+Body á kallinu á að vera `{"username": "admin", "password": "123"}`
+Svar frá vefþjóninum inniheldur token.
 
-`{"username": "admin", "password": "123"}`
+**tv/ POST**
 
-Þar sem á að gera aðgerð:
+Býr til sjónvarpsþáttaseríu
+Kallað með POST á slóðina https://hopedihop1.herokuapp.com/tv
+Setja þarf token-ið sem kom úr login kallinu sem `Bearer Token`.
+Gögnunum er postað sem form-data með eftirfarandi lykla og gildi:
 
-* Authorization
-
-  - Velja `Bearer Token`
-
-  - kópera `token` sem var skilað úr login
-
-* https://hopedihop1.herokuapp.com/tv
-
-POST með form-data:
-
-KEY og VALUE þar sem skrá er sett inn með því að velja File undir KEY
-
-t.d.  
-  - Title - Why Women Kill
-
-  - Language - en
-
-  - Image - mynd.jpg (velja File)
-
-  - First_aired - 05-03-2020
-
-Mun setja í gagnagrunninn ofangreindar upplýsingar, þar sem mynd.jpg er geymd á cloudinary og url á hana sett undir Image
-
+| Lykill | Gildi |
+|--------|-------|
+| title | Why Women Kill |
+| first_aired | 05-03-2020 |
+| in_production | true |
+| image | mynd.jpg (velja file) |
+| tagline | Really why? |
+| description | Dr. Phil explaines it all |
+| language | en |
 
 ## Hópur
 * Áslaug Högnadóttir - AslaugHogna
 * Bjarni Guðmundsson - bjarnig86
 * Einar Pálsson - einarpalsson
 * Hallbjörn Magnússon - Hallinn
-
-
-
 
 > Útgáfa 0.1
