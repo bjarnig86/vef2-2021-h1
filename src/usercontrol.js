@@ -309,13 +309,23 @@ router.post(
       return res.status(401).json({ error: 'User already registered' });
     }
 
-    const id = registerUser(username, email, password);
+    const newUser = await registerUser(username, email, password);
+    const { id } = newUser;
+
+    const data = {
+      id: id,
+      username: newUser.username,
+      email: newUser.email,
+      admin: newUser.admin,
+      created: new Date(),
+      updated: new Date(),
+    };
 
     if (id) {
       const payload = { id };
       const tokenOptions = { expiresIn: tokenLifetime };
       const token = jwt.sign(payload, jwtOptions.secretOrKey, tokenOptions);
-      return res.json({ token });
+      return res.json(data);
     }
 
     return res.status(401).json({ error: 'Could not register user ' });
