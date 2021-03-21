@@ -20,6 +20,10 @@ const validateRate = [
 const xssSanitizationRate = [param('rating').customSanitizer((v) => xss(v))];
 const xssSanitizationState = [param('status').customSanitizer((v) => xss(v))];
 
+ /**
+ * /tv/:id/rate POST,
+ * skráir einkunn innskráðs notanda á sjónvarpsþætti, aðeins fyrir innskráða notendur
+ */
 router.post(
   '/tv/:id/rate',
   requireAuthentication,
@@ -54,6 +58,10 @@ router.post(
   }
 );
 
+ /**
+ * /tv/:id/rate PATCH,
+ * uppfærir einkunn innskráðs notanda á sjónvarpsþætti
+ */
 router.patch(
   '/tv/:id/rate',
   requireAuthentication,
@@ -79,6 +87,10 @@ router.patch(
   }
 );
 
+/**
+ * /tv/:id/rate DELETE,
+ * eyðir einkunn innskráðs notanda á sjónvarpsþætti
+ */
 router.delete('/tv/:id/rate', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;
@@ -95,7 +107,13 @@ router.delete('/tv/:id/rate', requireAuthentication, async (req, res) => {
   return res.json(result);
 });
 
-router.post(
+/**
+ * /tv/:id/state POST,
+ * skráir stöðu innskráðs notanda á sjónvarpsþætti,
+ * aðeins fyrir innskráða notendur
+ */
+
+  router.post(
   '/tv/:id/state',
   requireAuthentication,
   xssSanitizationState,
@@ -128,6 +146,10 @@ router.post(
   }
 );
 
+/**
+ * /tv/:id/state PATCH,
+ * uppfærir stöðu innskráðs notanda á sjónvarpsþætti
+ */
 router.patch(
   '/tv/:id/state',
   requireAuthentication,
@@ -152,6 +174,10 @@ router.patch(
   }
 );
 
+/**
+ * /tv/:id/state DELETE,
+ * eyðir stöðu innskráðs notanda á sjónvarpsþætti
+ */
 router.delete('/tv/:id/state', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;

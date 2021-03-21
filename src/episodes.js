@@ -64,6 +64,11 @@ async function validationCheckEpisode(req, res, next) {
   return next();
 }
 
+/**
+ * /tv/:id/season/:season/episode/ POST,
+ * býr til nýjan þátt í season,
+ * aðeins ef notandi er stjórnandi
+ */
 router.post(
   '/tv/:id/season/:season/episode/',
   requireAdminAuthentication,
@@ -87,9 +92,13 @@ router.post(
     const result = await query(q, episodeData);
 
     return res.json(result);
-  },
+  }
 );
 
+/**
+ * /tv/:id/season/:season/episode/:episode GET,
+ * Skilar  skilar upplýsingum um þátt
+ */
 router.get('/tv/:id/season/:season/episode/:episode', async (req, res) => {
   const q = `SELECT * FROM episodes
     WHERE show = $1 AND season = $2 AND number = $3;`;
@@ -100,7 +109,11 @@ router.get('/tv/:id/season/:season/episode/:episode', async (req, res) => {
     req.params.episode,
   ]);
 
-  res.json(episodes.rows[0]);
+  if (episodes.rowCount === 0) {
+    return res.status(404).json({ error: 'Episode not found' });
+  }
+
+  return res.json(episodes.rows[0]);
 });
 
 /**
@@ -125,5 +138,5 @@ router.delete(
       RETURNING *;`);
 
     res.json(result);
-  },
+  }
 );

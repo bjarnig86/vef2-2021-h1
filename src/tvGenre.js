@@ -96,7 +96,7 @@ router.get(
     }
 
     res.json(result);
-  },
+  }
 );
 
 /**
@@ -115,9 +115,7 @@ router.post(
 
   async (req, res) => {
     // console.log(`tvRouting.js: /tv/:id/season post req.body --> ${req.body}`);
-    const {
-      title, number, first_aired, description, poster,
-    } = req.body;
+    const { title, number, first_aired, description, poster } = req.body;
 
     const seasonData = [
       title,
@@ -142,7 +140,7 @@ router.post(
     const result = await query(q, seasonData);
 
     return res.json(result);
-  },
+  }
 );
 
 /**
@@ -206,7 +204,7 @@ router.get(
     }
 
     res.json(result);
-  },
+  }
 );
 
 /**
@@ -224,8 +222,8 @@ router.delete(
 
   async (req, res) => {
     const result = await query(
-      `DELETE FROM seasons WHERE show = ${req.params.id} AND number = ${req.params.season} `,
+      `DELETE FROM seasons WHERE show = ${req.params.id} AND number = ${req.params.season} `
     );
     return res.json(result);
-  },
+  }
 );

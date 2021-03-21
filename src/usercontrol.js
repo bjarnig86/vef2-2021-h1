@@ -48,11 +48,12 @@ async function validateUser({ username, password, name }, patch = false) {
 
   // can't patch username
   if (!patch) {
-    const m = 'Username is required, must be at least three letters and no more than 32 characters';
+    const m =
+      'Username is required, must be at least three letters and no more than 32 characters';
     if (
-      typeof username !== 'string'
-      || username.length < 3
-      || username.length > 32
+      typeof username !== 'string' ||
+      username.length < 3 ||
+      username.length > 32
     ) {
       validationMessages.push({ field: 'username', message: m });
     }
@@ -134,7 +135,8 @@ export function requireAuthentication(req, res, next) {
     }
 
     if (!user) {
-      const error = info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
+      const error =
+        info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
 
       return res.status(401).json({ error });
     }
@@ -152,7 +154,8 @@ export function requireAdminAuthentication(req, res, next) {
     }
 
     if (!user) {
-      const error = info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
+      const error =
+        info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
 
       return res.status(401).json({ error });
     }
@@ -173,15 +176,12 @@ export function isLoggedIn(req, res, next) {
   }
 
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
-    if (info) {
-      return false;
-    }
     if (err) {
       return false;
     }
 
     if (!user) {
-      return false;
+      return next();
     }
 
     // Látum notanda vera aðgengilegan í rest af middlewares
@@ -191,11 +191,18 @@ export function isLoggedIn(req, res, next) {
 }
 
 /**
+ * /users/login POST,
  * Skráir notanda inn.
  */
 router.post('/users/login', async (req, res) => {
   const { username, password = '' } = req.body;
   const user = await findByUsername(username);
+
+  const validationMessage = validateUser({ username, password }, true);
+
+  if (validationMessage.length > 0) {
+    return res.status(400).json({ errors: validationMessage });
+  }
 
   if (!user) {
     return res.status(401).json({ error: 'No such user' });
@@ -212,7 +219,10 @@ router.post('/users/login', async (req, res) => {
 
   return res.status(401).json({ error: 'Invalid password' });
 });
-
+/**
+ * /users GET,
+ * skilar síðu af notendum, aðeins ef notandi sem framkvæmir er stjórnandi
+ */
 router.get('/users', requireAdminAuthentication, async (req, res) => {
   const allusers = await query('SELECT * FROM users');
   const users = [];
@@ -223,6 +233,13 @@ router.get('/users', requireAdminAuthentication, async (req, res) => {
   return res.json({ users });
 });
 
+/**
+ * /users/me GET,
+ * skilar upplýsingum um notanda
+ * sem á token,
+ * auðkenni og netfangi,
+ * aðeins ef notandi innskráður
+ */
 router.get('/users/me', requireAuthentication, async (req, res, next) => {
   if (req.method === 'PATCH') {
     return next();
@@ -244,22 +261,28 @@ router.patch('/users/me', requireAuthentication, async (req, res) => {
   if (email !== undefined && password !== undefined) {
     const hashedPassword = await hashPassword(password);
     await query(
-      `UPDATE users SET (email, password) = ('${email}', '${hashedPassword}') WHERE id = ${id}`,
+      `UPDATE users SET (email, password) = ('${email}', '${hashedPassword}') WHERE id = ${id}`
     );
-    res.json({ message: 'User has been updated' });
+    return res.json({ message: 'User has been updated' });
   } else if (email) {
     await query(`UPDATE users SET email = '${email}' WHERE id = ${id}`);
-    res.json({ message: 'User has been updated' });
+    return res.json({ message: 'User has been updated' });
   } else if (password) {
     const hashedPassword = await hashPassword(password);
     await query(
-      `UPDATE users SET password = '${hashedPassword}' WHERE id = ${id}`,
+      `UPDATE users SET password = '${hashedPassword}' WHERE id = ${id}`
     );
     return res.json({ message: 'User has been updated' });
   }
   return res.json({ error: 'no input' });
 });
 
+
+/**
+ * /users/:id GET,
+ * skilar notanda,
+ * aðeins ef notandi sem framkvæmir er stjórnandi
+ */
 router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
   const { params } = req;
   const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
@@ -272,6 +295,12 @@ router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
   return res.json(user);
 });
 
+/**
+ * /users/:id PATCH,
+ * breytir hvort notandi sé stjórnandi eða ekki
+ * aðeins ef notandi sem framkvæmir er stjórnandi
+ * og er ekki að breyta sér sjálfum
+ */
 router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
   const { params } = req;
   const currentUser = req.user;
@@ -309,15 +338,25 @@ router.post(
       return res.status(401).json({ error: 'User already registered' });
     }
 
-    const id = registerUser(username, email, password);
+    const newUser = await registerUser(username, email, password);
+    const { id } = newUser;
+
+    const data = {
+      id: id,
+      username: newUser.username,
+      email: newUser.email,
+      admin: newUser.admin,
+      created: new Date(),
+      updated: new Date(),
+    };
 
     if (id) {
       const payload = { id };
       const tokenOptions = { expiresIn: tokenLifetime };
       const token = jwt.sign(payload, jwtOptions.secretOrKey, tokenOptions);
-      return res.json({ token });
+      return res.json(data);
     }
 
     return res.status(401).json({ error: 'Could not register user ' });
-  },
+  }
 );
