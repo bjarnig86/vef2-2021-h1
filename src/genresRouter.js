@@ -1,6 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { query } from './db.js';
+import { body } from 'express-validator';
+import xss from 'xss';
 
 import { requireAdminAuthentication } from './usercontrol.js';
 import { catchErrors, validationCheck } from './utils.js';
@@ -13,6 +15,15 @@ export const router = express.Router();
 
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
+
+const genreValidation = [
+  body('title').isLength({ min: 1 }).withMessage('Titill má ekki vera tómur'),
+  body('title')
+    .isLength({ max: 48 })
+    .withMessage('Titill má ekki vera lengri en 48 stafir'),
+];
+
+const xssGenreSanitazion = [body('title').customSanitizer((v) => xss(v))];
 
 /**
  * /genres GET,
@@ -69,8 +80,9 @@ router.get('/genres', async (req, res) => {
 router.post(
   '/genres',
   requireAdminAuthentication,
+  genreValidation,
+  xssGenreSanitazion,
   catchErrors(validationCheck),
-
   async (req, res) => {
     const { title } = req.body;
 
