@@ -9,10 +9,10 @@ dotenv.config();
 
 /**
  * Býr til genres og shows_genres töflurnar með því að sækja upplýsingar úr series.csv skjalinu
- * @param {*} rows 
+ * @param {*} rows
  */
 async function importGenres(rows) {
-  let genres = [];
+  const genres = [];
   let id = 1;
 
   await rows.forEach((row) => {
@@ -21,13 +21,13 @@ async function importGenres(rows) {
 
     genreArray.forEach((gen) => {
       if (!genres.some((genre) => genre.genre === gen)) {
-        genres.push({ id: id, genre: gen }); //býr til array of objects með id og genre
+        genres.push({ id, genre: gen }); // býr til array of objects með id og genre
         id += 1;
       }
     });
   });
 
-  //genres sett inn í sína töflu
+  // genres sett inn í sína töflu
   const q = 'INSERT INTO genres (title) VALUES ($1) RETURNING *';
   await genres.forEach((genre) => {
     const values = [genre.genre];
@@ -35,16 +35,15 @@ async function importGenres(rows) {
     query(q, values);
   });
 
-  //tengitaflan shows_genres búin til
+  // tengitaflan shows_genres búin til
   await rows.forEach((row) => {
     let genreArray = [];
     genreArray = row.genres.split(',');
 
     const qu = 'INSERT INTO shows_genres (show, genre) VALUES ($1, $2);';
     genreArray.forEach((gen) => {
-      let found = genres.find(({ genre }) => genre === gen);
-      console.log(row.id);
-      console.log(found);
+      const found = genres.find(({ genre }) => genre === gen);
+      console.info(found);
 
       const values = [row.id, found.id];
       query(qu, values);
@@ -54,7 +53,7 @@ async function importGenres(rows) {
 
 /**
  * Býr til einn þátt í gagnagrunninum
- * @param {*} row 
+ * @param {*} row
  */
 async function importShow(row) {
   const q = `
@@ -64,9 +63,7 @@ async function importShow(row) {
     VALUES
       ($1, $2, $3, $4, $5, $6, $7, $8, $9)`;
 
-  const image =
-    'res.cloudinary.com/dhartr5et/image/upload/v1614684283/vef2-2021-h1/' +
-    row.image;
+  const image = `res.cloudinary.com/dhartr5et/image/upload/v1614684283/vef2-2021-h1/${row.image}`;
 
   const values = [
     row.name,
@@ -85,7 +82,7 @@ async function importShow(row) {
 
 /**
  * Býr til eitt season í gagnagrunninum
- * @param {*} row 
+ * @param {*} row
  */
 async function importSeason(row) {
   const q = `
@@ -95,28 +92,19 @@ async function importSeason(row) {
     VALUES
       ($1, $2, $3, $4, $5, $6)`;
 
-  const image =
-    'res.cloudinary.com/dhartr5et/image/upload/v1614684283/vef2-2021-h1/' +
-    row.image;
+  const image = `res.cloudinary.com/dhartr5et/image/upload/v1614684283/vef2-2021-h1/${row.image}`;
   let date = null;
-  if (row.airDate == '') date = null;
+  if (row.airDate === '') date = null;
   else date = row.airDate;
 
-  const values = [
-    row.name,
-    row.number,
-    date,
-    row.overview,
-    image,
-    row.serieId,
-  ];
+  const values = [row.name, row.number, date, row.overview, image, row.serieId];
 
   return query(q, values);
 }
 
 /**
  * Býr til einn þátt í gagnagrunnninum
- * @param {*} row 
+ * @param {*} row
  */
 async function importEpisode(row) {
   const q = `
@@ -127,7 +115,7 @@ async function importEpisode(row) {
       ($1, $2, $3, $4, $5, $6)`;
 
   let date = null;
-  if (row.airDate == '') date = null;
+  if (row.airDate === '') date = null;
   else date = row.airDate;
 
   const values = [
@@ -144,10 +132,10 @@ async function importEpisode(row) {
 
 /**
  * Hjálparfall sem parse-ar .csv skrá
- * @param {*} file 
+ * @param {*} file
  */
 function parseFile(file) {
-  let results = [];
+  const results = [];
   return new Promise((resolve, reject) => {
     fs.createReadStream(file)
       .on('error', (error) => {
@@ -162,7 +150,7 @@ function parseFile(file) {
 }
 
 /**
- * Fall sem sækir gögn úr series skjalinu og sendir 
+ * Fall sem sækir gögn úr series skjalinu og sendir
  * áfram í tvö önnur föll
  */
 async function importSeries() {
@@ -212,11 +200,11 @@ async function importEpisodes() {
   console.info('Finished Episodes');
 }
 
-await importSeries().catch((err) => {
+importSeries().catch((err) => {
   console.error('Error importing', err);
 });
 
-await importSeasons().catch((err) => {
+importSeasons().catch((err) => {
   console.error('Error importing', err);
 });
 

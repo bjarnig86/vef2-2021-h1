@@ -1,10 +1,9 @@
-// import { join, dirname } from 'path';
-// import { fileURLToPath } from 'url';
+/* eslint-disable camelcase */
 
 import express from 'express';
 import dotenv from 'dotenv';
 import xss from 'xss';
-import { body, param, validationResult } from 'express-validator';
+import { param, validationResult } from 'express-validator';
 import { query } from './db.js';
 import {
   validationCheck,
@@ -17,9 +16,8 @@ import {
 import { withMulter, createImageURL } from './image.js';
 
 import {
-  isLoggedIn, //ekkert notað??
+  isLoggedIn,
   requireAdminAuthentication,
-  requireAuthentication,
 } from './usercontrol.js';
 
 import { findByUserIdAndShowId } from './users.js';
@@ -207,54 +205,16 @@ async function validationMiddlewareTVShow({
     });
   }
   return validation;
-} //held það megi taka þetta út
+}
 
-/*const validationMiddlewareTVShowPatch = [
-  body('title')
-    .isLength({ min: 1 })
-    .withMessage('Titill þarf að vera amk 1 stafur'),
-  body('title')
-    .isLength({ max: 128 })
-    .withMessage('Titill má að hámarki vera 128 stafir'),
-  body('tagline')
-    .isLength({ max: 128 })
-    .withMessage('Tagline má að hámarki vera 128 stafir'),
-  body('description')
-    .isLength({ max: 400 })
-    .withMessage('Description má að hámarki vera 400 stafir'),
-  body('language')
-    .isLength({ max: 2 })
-    .withMessage('Language er táknað með tveimur bókstöfum'),
-  body('network')
-    .isLength({ max: 40 })
-    .withMessage('Network má að hámarki vera 40 stafir'),
-  body('webpage')
-    .isLength({ max: 255 })
-    .withMessage('Webpage má að hámarki vera 255 stafir'),
-  body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
+const validationMiddlewareId = [
   param('id').isNumeric().withMessage('id þarf að vera tala'),
-];*/ const validationMiddlewareId = [
-  param('id').isNumeric().withMessage('id þarf að vera tala'),
-]; //held það megi taka þetta út
-
-/*const xssSanitizationTVShow = [
-  body('title').customSanitizer((v) => xss(v)),
-  body('first_aired').customSanitizer((v) => xss(v)),
-  body('in_production').customSanitizer((v) => xss(v)),
-  body('tagline').customSanitizer((v) => xss(v)),
-  body('image').customSanitizer((v) => xss(v)),
-  body('description').customSanitizer((v) => xss(v)),
-  body('language').customSanitizer((v) => xss(v)),
-  body('network').customSanitizer((v) => xss(v)),
-  body('webpage').customSanitizer((v) => xss(v)),
-  body('id').customSanitizer((v) => xss(v)),
-];*/ const xssSanitizationId = [
-  param('id').customSanitizer((v) => xss(v)),
 ];
+
+const xssSanitizationId = [param('id').customSanitizer((v) => xss(v))];
 
 async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
-  //   console.log('validation :>> ', validation);
 
   if (!validation.isEmpty()) {
     return res.json({ errors: validation.errors });
@@ -361,8 +321,7 @@ router.get('/tv/:id', isLoggedIn, async (req, res) => {
 
   const avgRating = ratings / userShow.rowCount;
 
-  const getGenres =
-    'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
+  const getGenres = 'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
   const showGenres = await query(getGenres, [id]);
   const arrayGenres = showGenres.rows[0].json_agg;
 

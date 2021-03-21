@@ -58,13 +58,13 @@ export async function findByUserIdAndShowId(userId, show) {
 }
 
 export async function hashPassword(password) {
+  // eslint-disable-next-line no-return-await
   return await bcrypt.hash(password, 11);
 }
 
 export async function registerUser(username, email, password) {
   const hashedPassword = await hashPassword(password);
-  const q =
-    'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *';
+  const q = 'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *';
 
   try {
     const result = await query(q, [username, email, hashedPassword]);

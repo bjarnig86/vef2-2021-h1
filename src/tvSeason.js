@@ -1,7 +1,8 @@
+/* eslint-disable object-curly-newline */
+/* eslint-disable camelcase */
 import express from 'express';
 import dotenv from 'dotenv';
 import xss from 'xss';
-import { body } from 'express-validator';
 import { query } from './db.js';
 import {
   validationMiddlewareId,
@@ -31,14 +32,6 @@ function isEmpty(s) {
 function isPosInt(i) {
   return i > 0 && i !== '' && Number.isInteger(Number(i));
 }
-
-const xssSanitizationSeason = [
-  body('title').customSanitizer((v) => xss(v)),
-  body('number').customSanitizer((v) => xss(v)),
-  body('first_aired').customSanitizer((v) => xss(v)),
-  body('description').customSanitizer((v) => xss(v)),
-  body('poster').customSanitizer((v) => xss(v)),
-];
 
 async function validationMiddlewareSeason({ title, number } = {}) {
   const validation = [];
@@ -142,9 +135,7 @@ router.post(
     // console.log(`tvRouting.js: /tv/:id/season post req.body --> ${req.body}`);
     await withMulter(req, res, next);
 
-    const {
-      title, number, first_aired, description,
-    } = req.body;
+    const { title, number, first_aired, description } = req.body;
     const val = { title, number };
 
     const validations = await validationMiddlewareSeason(val);
