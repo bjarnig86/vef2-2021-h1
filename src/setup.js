@@ -2,12 +2,11 @@
 import { readFile } from 'fs/promises';
 import { query, end } from './db.js';
 
-// import { importData } from './importcsv.js'
 
 const schemaFile = './sql/schema.sql';
 
 /**
- * Býr til töflur í grunni og gervigögn.
+ * Býr til töflur í grunni.
  */
 async function create() {
   const data = await readFile(schemaFile);

@@ -40,7 +40,6 @@ export function withMulter(req, res, next) {
       }
 
       resolve(req, res, next);
-      // resolve(createImageURL(req, res, next));
     });
   });
 }

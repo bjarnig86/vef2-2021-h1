@@ -1,8 +1,6 @@
 /* eslint-disable object-curly-newline */
 /* eslint-disable operator-linebreak */
 /* eslint-disable camelcase */
-// import { join, dirname } from 'path';
-// import { fileURLToPath } from 'url';
 
 import express from 'express';
 import xss from 'xss';
