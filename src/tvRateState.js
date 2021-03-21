@@ -150,8 +150,7 @@ router.delete('/tv/:id/rate', requireAuthentication, async (req, res) => {
  * /tv/:id/state PATCH,
  * uppfærir stöðu innskráðs notanda á sjónvarpsþætti
  */
-
-  router.patch(
+router.patch(
   '/tv/:id/state',
   requireAuthentication,
   xssSanitizationState,
@@ -175,6 +174,10 @@ router.delete('/tv/:id/rate', requireAuthentication, async (req, res) => {
   }
 );
 
+/**
+ * /tv/:id/state DELETE,
+ * eyðir stöðu innskráðs notanda á sjónvarpsþætti
+ */
 router.delete('/tv/:id/state', requireAuthentication, async (req, res) => {
   const tvId = parseInt(req.params.id, 10);
   const userId = req.user.id;
