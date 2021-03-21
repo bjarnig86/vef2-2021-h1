@@ -7,14 +7,15 @@ import xss from 'xss';
 import { body, param, validationResult } from 'express-validator';
 import { query } from './db.js';
 import { validationCheck } from './utils.js';
-import { withMulter } from './image.js';
-import { createImageURL } from './image.js';
+import { withMulter, createImageURL } from './image.js';
 
 import {
-  isLoggedIn,
+  isLoggedIn, //ekkert notað??
   requireAdminAuthentication,
   requireAuthentication,
 } from './usercontrol.js';
+
+import { findByUserIdAndShowId } from './users.js';
 
 dotenv.config();
 
@@ -24,9 +25,8 @@ export const router = express.Router();
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
 
-
 function isEmpty(s) {
-if (typeof s === 'undefined') return true;
+  if (typeof s === 'undefined') return true;
   return s != null && !s;
 }
 
@@ -49,20 +49,16 @@ function catchErrors(fn) {
  * meðal einkunn sjónvarpsþáttar,
  * fjölda einkunna sem hafa verið skráðar fyrir sjónvarpsþátt
  */
-router.get('/tv', isLoggedIn, async (req, res) => {
+router.get('/tv', async (req, res) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
   limit = Number(limit);
-
-  const { user } = req;
-  console.log('user :>> ', user);
 
   const allShows = await query(
     'SELECT * FROM shows ORDER BY id ASC OFFSET $1 LIMIT $2',
     [offset, limit],
   );
 
-  // const url = req.protocol + '://' + req.headers.host + req.originalUrl;
   const { path } = req;
 
   const result = {
@@ -95,55 +91,58 @@ router.get('/tv', isLoggedIn, async (req, res) => {
 
 /**
  * validerar post gögn frá /tv
- * @param {*} param0 
+ * @param {*} param0
  */
-async function validationMiddlewareTVShow(
-  {title, tagline, language, network, webpage} = {}
-) {
+async function validationMiddlewareTVShow({
+  title,
+  tagline,
+  language,
+  network,
+  webpage,
+} = {}) {
   const validation = [];
 
-  if(isEmpty(title) || title.length < 1) {
+  if (isEmpty(title) || title.length < 1) {
     validation.push({
       field: 'title',
       error: 'Titill þarf að vera amk 1 stafur',
     });
   }
-  if(!isEmpty(title) && title.length > 255) {
+  if (!isEmpty(title) && title.length > 255) {
     validation.push({
       field: 'title',
       error: 'Titill má að hámarki vera 255 stafir',
     });
   }
-  if(!isEmpty(tagline) && tagline.length > 255) {
+  if (!isEmpty(tagline) && tagline.length > 255) {
     validation.push({
       field: 'tagline',
       error: 'Tagline má að hámarki vera 255 stafir',
     });
   }
-  if(isEmpty(language) || language.length !== 2) {
+  if (isEmpty(language) || language.length !== 2) {
     validation.push({
       field: 'language',
-      error: 'Language þarf að vera til staðar og er táknað með tveimur bókstöfum',
+      error:
+        'Language þarf að vera til staðar og er táknað með tveimur bókstöfum',
     });
   }
-  if(!isEmpty(network) && network.length > 255) {
+  if (!isEmpty(network) && network.length > 255) {
     validation.push({
       field: 'network',
       error: 'Network má að hámarki vera 255 stafir',
     });
   }
-  if(!isEmpty(webpage) && webpage.length > 255) {
+  if (!isEmpty(webpage) && webpage.length > 255) {
     validation.push({
       field: 'webpage',
       error: 'Webpage má að hámarki vera 255 stafir',
     });
   }
-
   return validation;
-}
+} //held það megi taka þetta út
 
-
-const validationMiddlewareTVShowPatch = [
+/*const validationMiddlewareTVShowPatch = [
   body('title')
     .isLength({ min: 1 })
     .withMessage('Titill þarf að vera amk 1 stafur'),
@@ -167,13 +166,11 @@ const validationMiddlewareTVShowPatch = [
     .withMessage('Webpage má að hámarki vera 255 stafir'),
   body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
   param('id').isNumeric().withMessage('id þarf að vera tala'),
-];
-
-const validationMiddlewareId = [
+];*/ const validationMiddlewareId = [
   param('id').isNumeric().withMessage('id þarf að vera tala'),
-];
+]; //held það megi taka þetta út
 
-const xssSanitizationTVShow = [
+/*const xssSanitizationTVShow = [
   body('title').customSanitizer((v) => xss(v)),
   body('first_aired').customSanitizer((v) => xss(v)),
   body('in_production').customSanitizer((v) => xss(v)),
@@ -184,9 +181,9 @@ const xssSanitizationTVShow = [
   body('network').customSanitizer((v) => xss(v)),
   body('webpage').customSanitizer((v) => xss(v)),
   body('id').customSanitizer((v) => xss(v)),
+];*/ const xssSanitizationId = [
+  param('id').customSanitizer((v) => xss(v)),
 ];
-
-const xssSanitizationId = [param('id').customSanitizer((v) => xss(v))];
 
 async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
@@ -219,7 +216,13 @@ router.post(
       webpage,
     } = req.body;
 
-    const val = {title, tagline, language, network, webpage};
+    const val = {
+      title,
+      tagline,
+      language,
+      network,
+      webpage,
+    };
 
     const validations = await validationMiddlewareTVShow(val);
     catchErrors(validationCheckTVShow);
@@ -236,10 +239,8 @@ router.post(
       });
     }
 
-    console.log("Mynd" + image + "routing");
+    const isset = (f) => typeof f === 'string' || typeof f === 'number';
 
-    const isset = f => typeof f === 'string' || typeof f === 'number';
-    
     const showData = [
       isset(title) ? xss(title) : null,
       isset(first_aired) ? xss(first_aired) : null,
@@ -251,7 +252,6 @@ router.post(
       isset(network) ? xss(network) : null,
       isset(webpage) ? xss(webpage) : null,
     ];
-    
 
     const q = `INSERT INTO shows 
   (title, first_aired, in_production, tagline, image, description, language, network, webpage) 
@@ -274,25 +274,82 @@ router.post(
  * rating notanda,
  * staða notanda
  */
-router.get('/tv/:id', requireAuthentication, async (req, res) => {
-  const getShow = 'SELECT row_to_json (shows) FROM shows WHERE id = $1';
-  const show = await query(getShow, [req.params.id]);
+router.get('/tv/:id', isLoggedIn, async (req, res) => {
+  const { id } = req.params;
+  const { user } = req;
+
+  const qShow = 'SELECT * FROM shows WHERE id = $1;';
+  const show = await query(qShow, [id]);
+  const showData = show.rows[0];
 
   const getUserShow = 'SELECT * FROM users_shows WHERE show = $1';
-  const userShow = await query(getUserShow, [req.params.id]);
+  const userShow = await query(getUserShow, [id]);
 
-  const getUserRating =
-    'SELECT rating FROM users_shows WHERE "user" = $1 AND show = $2';
-  const userRating = await query(getUserRating, [req.user.id, req.params.id]);
+  let ratings = 0;
+  userShow.rows.forEach((row) => {
+    ratings += parseInt(row.rating, 10);
+  });
+
+  const avgRating = ratings / userShow.rowCount;
 
   const getGenres =
     'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
-  const showGenres = await query(getGenres, [req.params.id]);
+  const showGenres = await query(getGenres, [id]);
+  const arrayGenres = showGenres.rows[0].json_agg;
+
+  const allGenres = [];
+  arrayGenres.forEach((genre) => {
+    allGenres.push({ name: genre });
+  });
 
   const getSeasons = 'SELECT * FROM seasons WHERE show = $1;';
-  const showSeasons = await query(getSeasons, [req.params.id]);
+  const showSeasons = await query(getSeasons, [id]);
 
-  return res.json(seasons.rows);
+  if (user) {
+    const userShowRateState = await findByUserIdAndShowId(user.id, id);
+    const userRating = userShowRateState ? userShowRateState.rating : null;
+    const userStatus = userShowRateState ? userShowRateState.status : null;
+
+    const result = {
+      id: showData.id,
+      title: showData.title,
+      first_aired: showData.first_aired,
+      in_production: showData.in_production,
+      tagline: showData.tagline,
+      image: showData.image,
+      description: showData.description,
+      language: showData.language,
+      network: showData.network,
+      webpage: showData.webpage,
+      averageRating: avgRating,
+      ratingCount: userShow.rowCount,
+      userRating,
+      userStatus,
+      genres: allGenres,
+      seasons: showSeasons.rows,
+    };
+
+    return res.json(result);
+  }
+
+  const result = {
+    id: showData.id,
+    title: showData.title,
+    first_aired: showData.first_aired,
+    in_production: showData.in_production,
+    tagline: showData.tagline,
+    image: showData.image,
+    description: showData.description,
+    language: showData.language,
+    network: showData.network,
+    webpage: showData.webpage,
+    averageRating: avgRating,
+    ratingCount: userShow.rowCount,
+    genres: allGenres,
+    seasons: showSeasons.rows,
+  };
+
+  return res.json(result);
 });
 
 /**
@@ -302,17 +359,18 @@ router.get('/tv/:id', requireAuthentication, async (req, res) => {
 router.patch(
   '/tv/:id',
   requireAdminAuthentication,
-  validationMiddlewareTVShowPatch,
-  xssSanitizationTVShow,
-  catchErrors(validationCheckTVShow),
+  validationMiddlewareId,
+  //validationMiddlewareTVShowPatch,
+  //xssSanitizationTVShow,
+  //catchErrors(validationCheckTVShow),
 
   async (req, res, next) => {
+    await withMulter(req, res, next);
     const {
       title,
       first_aired,
       in_production,
       tagline,
-      image,
       description,
       language,
       network,
@@ -320,17 +378,34 @@ router.patch(
     } = req.body;
 
     const { id } = req.params;
+    const val = { title, tagline, language, network, webpage };
+
+    const validations = await validationMiddlewareTVShow(val);
+    catchErrors(validationCheckTVShow);
+    if (validations.length > 0) {
+      return res.status(400).json({
+        errors: validations,
+      });
+    }
+
+    const [image, valid] = await createImageURL(req, res, next);
+    if (valid.length > 0) {
+      return res.status(400).json({
+        errors: valid,
+      });
+    }
+    const isset = (f) => typeof f === 'string' || typeof f === 'number';
 
     const showData = [
-      title,
-      first_aired,
-      in_production,
-      tagline,
+      isset(title) ? xss(title) : null,
+      isset(first_aired) ? xss(first_aired) : null,
+      isset(in_production) ? xss(in_production) : null,
+      isset(tagline) ? xss(tagline) : null,
       image,
-      description,
-      language,
-      network,
-      webpage,
+      isset(description) ? xss(description) : null,
+      isset(language) ? xss(language) : null,
+      isset(network) ? xss(network) : null,
+      isset(webpage) ? xss(webpage) : null,
       id,
     ];
 
@@ -362,7 +437,7 @@ router.patch(
 router.delete(
   '/tv/:id',
   requireAdminAuthentication,
-  validationMiddlewareId,
+  validationMiddlewareId, //er ekki allt þetta validation/sanitization óþarfi í delete?
   xssSanitizationId,
   catchErrors(validationCheck),
 
@@ -371,5 +446,3 @@ router.delete(
     return res.json(result);
   },
 );
-
-

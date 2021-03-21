@@ -6,13 +6,10 @@
 
 import express from 'express';
 import xss from 'xss';
-import { param, body, validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 import { query } from './db.js';
 
-import {
-  requireAdminAuthentication,
-  requireAuthentication,
-} from './usercontrol.js';
+import { requireAdminAuthentication } from './usercontrol.js';
 
 export const router = express.Router();
 
