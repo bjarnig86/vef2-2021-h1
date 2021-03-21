@@ -28,6 +28,7 @@ Sett upp á Heroku app sem [hopedihop1](https://hopedihop1.herokuapp.com/)
 * Notendanafn: `bjarnicool`
 * password: `123`
 * POST /login: `{"username": "bjarnicool", "password": "123"}`
+bjarnicool er með skráð rating og state á show 1,2 & 3.
 
 ## Dæmi um köll í vefþjónustu
 ### Sem óinnskráður notandi:
