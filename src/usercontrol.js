@@ -245,6 +245,12 @@ router.get('/users/me', requireAuthentication, async (req, res, next) => {
   return res.json(user);
 });
 
+/**
+ * /users/me PATCH
+ * uppfærir netfang,
+ * lykilorð eða bæði ef gögn rétt,
+ * aðeins ef notandi innskráður
+ */
 router.patch('/users/me', requireAuthentication, async (req, res) => {
   const { id } = req.user;
   const { email, password } = req.body;
