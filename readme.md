@@ -9,55 +9,79 @@ Sjá lýsingu verkefnis: [verkefni 4](https://github.com/vefforritun/vef2-2021-h
 
 Sett upp á Heroku app sem [hopedihop1](https://hopedihop1.herokuapp.com/)
 
-## Leiðbeiningar
+## Uppsetning
 
-Setja repo upp locally: --> `gh repo clone bjarnig86/vef2-h1`
-
-Setja upp umhverfi locally:
---> `npm install`
-
-Starta postgres server locally á unix tölvu:
---> `sudo service postgresql start`
-
-Starta postgres server locally á Windows tölvu:
---> `???`
-
-`DATABASE_URL=postgres://<USER>:<PASS>@localhost/<DATABASENAME>`
-
-Setja töflur í gagnagrunn:
---> `npm run setup`
-
-Keyra gögn inn í gagnagrunn:
---> `npm run import`
-
-Keyra eslint á js skjöl og Stylelint á scss skjöl: --> `npm test`
-
-Setja vefþjón í gang:
---> `npm start`
-
-## NTG
-
-"Note To Group" til að halda aðeins utan um nauðsynlegar upplýsingar sem við þurfum að vita og muna.
-
-Vinna með gagnagrunn í terminal sem postgres user: --> `sudo -u postgres psql <nafn_gagnagrunns>`
-
-Pushar yfir á Heroku: --> `gp heroku`
-
-Keyrir node skipanir á Heroku: --> `heroku run` + `<skipun>`
-
-Keyrir logga á Heroku: --> `heroku logs -t`
-
-Opna pqweb (Halli): --> `pgweb --url postgres://postgres:postgres@localhost/vef2-h1`
+* Keyra npm install eftir að verkefni hefur verið sótt
+* Búa til gagnagrunn fyrir verkefni, t.d. `h1`
+* Setja `DATABASE_URL` fyrir gagnagrunn í `.env`
+* Keyra npm run setup - býr til töflurnar í gagnagrunninum
+* Keyra npm run import - setur gögnin úr .csv skránum undir /data inn í gagnagrunninn
+* Í .env.example má sjá það sem þarf að setja sem JWT_SECRET og CLOUDINARY_URL
+* Keyra npm start - setur vefþjón í gang
+* Keyra npm test - til að keyra eslint
 
 
-### Git vinnuhringur
-1. Færa sig yfir á main til að sækja nýjasta: --> `git checkout main`
-2. Sækja nýjasta: Verandi á main: --> `git pull`
-3. Fara yfir á branch: --> `git checkout <branch>`
-4. Sameina: --> `git merge main`
-5. Vinna og gera breytingar.
-6. Commit-a: --> `gc -a -m"<texti>"`
-7. Push-a: --> `gp`
-8. Merge-a: Framkvæma "Compare & pull request" uppi á [github](https://github.com/bjarnig86/vef2-h1) 
+## Notendur
+
+### admin
+* Notendanafn: `admin`
+* password: `123`
+* POST /login: `{"username": "admin", "password": "123"}`
+
+### auðkenndur notendi
+* Notendanafn: `bjarnicool`
+* password: `123`
+* POST /login: `{"username": "bjarnicool", "password": "123"}`
+
+## Dæmi um köll í vefþjónustu
+
+### Sem óinnskráður notandi:
+--> http://<grunnsíða>/tv
+GET - mun skila síðum af sjónvarpsþáttum með grunnupplýsingum
+--> http://<grunnsíða>/tv/2/season
+GET - mun skila öllum seasons í sjónvarpsþætti með id 2
+
+### Sem innskráður notandi:
+Fyrst:
+--> http://<grunnsíða>/users/login
+`{"username": "bjarnicool", "password": "123"}`
+Skilar token 
+Þar sem á að gera aðgerð:
+--> Authorization
+    --> Velja `Bearer Token`
+    --> kópera `token` sem var skilað úr login
+--> http://<grunnsíða>/tv/4/rate
+`{"rating": "5"}`
+POST - leyfir notanda að skrá einkunnina 5 fyrir sjónvarpsþátt með id 4
+PATCH - leyfir notanda að breyta einkunn fyrir sjónvarpsþátt með id 4
+DELETE - eyðir einkunn notanda fyrir sjónvarpsþátt með id 4
+
+### Sem admin:
+Fyrst:
+--> http://<grunnsíða>/users/login
+`{"username": "admin", "password": "123"}`
+Þar sem á að gera aðgerð:
+--> Authorization
+    --> Velja `Bearer Token`
+    --> kópera `token` sem var skilað úr login
+--> http://<grunnsíða>/tv
+POST með form-data:
+KEY og VALUE þar sem skrá er sett inn með því að velja File undir KEY
+t.d.  Title - Why Women Kill
+      Language - en
+      Image - mynd.jpg (velja File)
+      First_aired - 05-03-2020
+Mun setja í gagnagrunninn ofangreindar upplýsingar, þar sem mynd.jpg er geymd á cloudinary og url á hana sett undir Image
+
+
+
+## Hópur
+* Áslaug Högnadóttir - AslaugHogna
+* Bjarni Guðmundsson - bjarnig86
+* Einar Pálsson - einarpalsson
+* Hallbjörn Magnússon - Hallinn
+
+
+
 
 > Útgáfa 0.1
