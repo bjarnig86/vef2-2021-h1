@@ -63,7 +63,8 @@ export async function hashPassword(password) {
 
 export async function registerUser(username, email, password) {
   const hashedPassword = await hashPassword(password);
-  const q = 'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id';
+  const q =
+    'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *';
 
   try {
     const result = await query(q, [username, email, hashedPassword]);
@@ -76,4 +77,21 @@ export async function registerUser(username, email, password) {
   }
 
   return null;
+}
+
+export async function findByShowId(show) {
+  const q = 'SELECT * FROM users_shows WHERE show = $1';
+
+  try {
+    const result = await query(q, [show]);
+
+    if (result.rowCount > 0) {
+      return result.rows;
+    }
+  } catch (e) {
+    console.error('Gat ekki fundið notanda eftir notanda id');
+    return null;
+  }
+
+  return false;
 }

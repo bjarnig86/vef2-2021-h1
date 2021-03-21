@@ -10,10 +10,12 @@ import { validationCheck } from './utils.js';
 import { withMulter, createImageURL } from './image.js';
 
 import {
-  isLoggedIn,    //ekkert notað??
+  isLoggedIn, //ekkert notað??
   requireAdminAuthentication,
   requireAuthentication,
 } from './usercontrol.js';
+
+import { findByUserIdAndShowId } from './users.js';
 
 dotenv.config();
 
@@ -138,7 +140,7 @@ async function validationMiddlewareTVShow({
     });
   }
   return validation;
-}
+} //held það megi taka þetta út
 
 /*const validationMiddlewareTVShowPatch = [
   body('title')
@@ -164,11 +166,9 @@ async function validationMiddlewareTVShow({
     .withMessage('Webpage má að hámarki vera 255 stafir'),
   body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
   param('id').isNumeric().withMessage('id þarf að vera tala'),
-];*/    //held það megi taka þetta út
-
-const validationMiddlewareId = [
+];*/ const validationMiddlewareId = [
   param('id').isNumeric().withMessage('id þarf að vera tala'),
-];
+]; //held það megi taka þetta út
 
 /*const xssSanitizationTVShow = [
   body('title').customSanitizer((v) => xss(v)),
@@ -181,9 +181,9 @@ const validationMiddlewareId = [
   body('network').customSanitizer((v) => xss(v)),
   body('webpage').customSanitizer((v) => xss(v)),
   body('id').customSanitizer((v) => xss(v)),
-];*/     //held það megi taka þetta út
-
-const xssSanitizationId = [param('id').customSanitizer((v) => xss(v))];
+];*/ const xssSanitizationId = [
+  param('id').customSanitizer((v) => xss(v)),
+];
 
 async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
@@ -195,7 +195,10 @@ async function validationCheckTVShow(req, res, next) {
 
   return next();
 }
-
+/**
+ * /tv POST
+ * býr til nýjan sjónvarpsþátt, aðeins ef notandi er stjórnandi
+ */
 router.post(
   '/tv',
   requireAdminAuthentication,
@@ -236,7 +239,7 @@ router.post(
       });
     }
 
-    const isset = f => typeof f === 'string' || typeof f === 'number';
+    const isset = (f) => typeof f === 'string' || typeof f === 'number';
 
     const showData = [
       isset(title) ? xss(title) : null,
@@ -271,23 +274,82 @@ router.post(
  * rating notanda,
  * staða notanda
  */
-router.get('/tv/:id', requireAuthentication, async (req, res) => {
-  const getShow = 'SELECT row_to_json (shows) FROM shows WHERE id = $1';
-  const show = await query(getShow, [req.params.id]);
+router.get('/tv/:id', isLoggedIn, async (req, res) => {
+  const { id } = req.params;
+  const { user } = req;
+
+  const qShow = 'SELECT * FROM shows WHERE id = $1;';
+  const show = await query(qShow, [id]);
+  const showData = show.rows[0];
 
   const getUserShow = 'SELECT * FROM users_shows WHERE show = $1';
-  const userShow = await query(getUserShow, [req.params.id]);
+  const userShow = await query(getUserShow, [id]);
 
-  const getUserRating = 'SELECT rating FROM users_shows WHERE "user" = $1 AND show = $2';
-  const userRating = await query(getUserRating, [req.user.id, req.params.id]);
+  let ratings = 0;
+  userShow.rows.forEach((row) => {
+    ratings += parseInt(row.rating, 10);
+  });
 
-  const getGenres = 'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
-  const showGenres = await query(getGenres, [req.params.id]);
+  const avgRating = ratings / userShow.rowCount;
+
+  const getGenres =
+    'SELECT json_agg(genres.title) FROM genres INNER JOIN shows_genres ON genres.id = shows_genres.genre INNER JOIN shows ON shows.id = shows_genres.show WHERE shows.id = $1;';
+  const showGenres = await query(getGenres, [id]);
+  const arrayGenres = showGenres.rows[0].json_agg;
+
+  const allGenres = [];
+  arrayGenres.forEach((genre) => {
+    allGenres.push({ name: genre });
+  });
 
   const getSeasons = 'SELECT * FROM seasons WHERE show = $1;';
-  const showSeasons = await query(getSeasons, [req.params.id]);
+  const showSeasons = await query(getSeasons, [id]);
 
-  return res.json(seasons.rows);
+  if (user) {
+    const userShowRateState = await findByUserIdAndShowId(user.id, id);
+    const userRating = userShowRateState ? userShowRateState.rating : null;
+    const userStatus = userShowRateState ? userShowRateState.status : null;
+
+    const result = {
+      id: showData.id,
+      title: showData.title,
+      first_aired: showData.first_aired,
+      in_production: showData.in_production,
+      tagline: showData.tagline,
+      image: showData.image,
+      description: showData.description,
+      language: showData.language,
+      network: showData.network,
+      webpage: showData.webpage,
+      averageRating: avgRating,
+      ratingCount: userShow.rowCount,
+      userRating,
+      userStatus,
+      genres: allGenres,
+      seasons: showSeasons.rows,
+    };
+
+    return res.json(result);
+  }
+
+  const result = {
+    id: showData.id,
+    title: showData.title,
+    first_aired: showData.first_aired,
+    in_production: showData.in_production,
+    tagline: showData.tagline,
+    image: showData.image,
+    description: showData.description,
+    language: showData.language,
+    network: showData.network,
+    webpage: showData.webpage,
+    averageRating: avgRating,
+    ratingCount: userShow.rowCount,
+    genres: allGenres,
+    seasons: showSeasons.rows,
+  };
+
+  return res.json(result);
 });
 
 /**
@@ -316,8 +378,8 @@ router.patch(
     } = req.body;
 
     const { id } = req.params;
-    const val = {title, tagline, language, network, webpage};
-    
+    const val = { title, tagline, language, network, webpage };
+
     const validations = await validationMiddlewareTVShow(val);
     catchErrors(validationCheckTVShow);
     if (validations.length > 0) {
@@ -332,7 +394,7 @@ router.patch(
         errors: valid,
       });
     }
-    const isset = f => typeof f === 'string' || typeof f === 'number';
+    const isset = (f) => typeof f === 'string' || typeof f === 'number';
 
     const showData = [
       isset(title) ? xss(title) : null,
@@ -375,7 +437,7 @@ router.patch(
 router.delete(
   '/tv/:id',
   requireAdminAuthentication,
-  validationMiddlewareId,    //er ekki allt þetta validation/sanitization óþarfi í delete?
+  validationMiddlewareId, //er ekki allt þetta validation/sanitization óþarfi í delete?
   xssSanitizationId,
   catchErrors(validationCheck),
 

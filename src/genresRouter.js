@@ -14,6 +14,10 @@ export const router = express.Router();
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
 
+/**
+ * /genres GET,
+ * skilar síðu af tegundum (genres)
+ */
 router.get('/genres', async (req, res) => {
   let { offset = 0, limit = 10 } = req.query;
   offset = Number(offset);
@@ -25,11 +29,14 @@ router.get('/genres', async (req, res) => {
       ORDER BY id ASC OFFSET $1 LIMIT $2;`;
 
   const genres = await query(q, [offset, limit]);
+  const titles = [];
+
+  genres.rows.map((row) => titles.push({ name: row.title }));
 
   const result = {
     limit,
     offset,
-    items: genres.rows,
+    items: titles,
     links: {
       self: {
         href: `${baseUrl}${path}?offset=${offset}&limit=${limit}`,
@@ -54,6 +61,11 @@ router.get('/genres', async (req, res) => {
   res.json(result);
 });
 
+/**
+ * /genres POST,
+ * býr til tegund,
+ * aðeins ef notandi er stjórnandi
+ */
 router.post(
   '/genres',
   requireAdminAuthentication,
@@ -67,5 +79,5 @@ router.post(
     const result = await query(q, [title]);
 
     return res.json(result);
-  },
+  }
 );
