@@ -215,7 +215,7 @@ async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
 
   if (!validation.isEmpty()) {
-    return res.json({ errors: validation.errors });
+    return res.status(400).json({ errors: validation.errors });
   }
 
   return next();
@@ -330,7 +330,6 @@ router.get('/tv/:id', isLoggedIn, async (req, res) => {
 
   const getSeasons = 'SELECT * FROM seasons WHERE show = $1;';
   const showSeasons = await query(getSeasons, [id]);
-  console.log('showSeasons :>> ', showSeasons);
 
   if (user) {
     const userShowRateState = await findByUserIdAndShowId(user.id, id);
@@ -467,7 +466,7 @@ router.patch(
     const result = await conditionalUpdate('shows', id, fields, values);
 
     if (result.rowCount === 0) {
-      return res.json('Show not found');
+      return res.status(404).json('Show not found');
     }
     return res.json(result.rows[0]);
   },

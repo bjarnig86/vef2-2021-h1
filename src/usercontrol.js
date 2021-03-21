@@ -201,7 +201,7 @@ router.post('/users/login', async (req, res) => {
   }
 
   if (!user) {
-    return res.status(401).json({ error: 'No such user' });
+    return res.status(400).json({ error: 'No such user' });
   }
 
   const passwordIsCorrect = await comparePasswords(password, user.password);
@@ -276,7 +276,7 @@ router.patch('/users/me', requireAuthentication, async (req, res) => {
     );
     return res.json({ message: 'User has been updated' });
   }
-  return res.json({ error: 'no input' });
+  return res.status(400).json({ error: 'no input' });
 });
 
 /**
@@ -308,14 +308,14 @@ router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
 
   // ef reynt er að breyta sér sjálfum
   if (currentUser.id === params.id) {
-    return res.json({ error: 'Can only change other users' });
+    return res.status(401).json({ error: 'Can only change other users' });
   }
 
   const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
 
   // ef user sem á að breyta er admin
   if (getUser.rows[0].admin) {
-    return res.json({ error: 'User already is admin' });
+    return res.status(400).json({ error: 'User already is admin' });
   }
   // Breyting á user
   await query(`UPDATE users SET admin = true WHERE id = ${params.id}`);
@@ -336,7 +336,7 @@ router.post(
     const user = await findByUsername(username);
 
     if (user) {
-      return res.status(401).json({ error: 'User already registered' });
+      return res.status(400).json({ error: 'User already registered' });
     }
 
     const newUser = await registerUser(username, email, password);
@@ -355,6 +355,6 @@ router.post(
       return res.json(data);
     }
 
-    return res.status(401).json({ error: 'Could not register user ' });
+    return res.status(400).json({ error: 'Could not register user ' });
   },
 );

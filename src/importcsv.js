@@ -200,19 +200,6 @@ async function importEpisodes() {
   console.info('Finished Episodes');
 }
 
-await importSeries().catch((err) => {
-  console.error('Error importing', err);
-});
-
-await importSeasons().catch((err) => {
-  console.error('Error importing', err);
-});
-
-await importEpisodes().catch((err) => {
-  console.error('Error importing', err);
-});
-
-
 /**
  * Keyrir inn rate og state á user bjarniCool
  */
@@ -227,6 +214,22 @@ async function insertRateAndState() {
   console.info('Finished Insert Rate & State');
 }
 
-await insertRateAndState().catch((err) => {
-  console.error('Error importing', err);
-});
+async function insertIntoDataBase() {
+  await importSeries().catch((err) => {
+    console.error('Error importing', err);
+  });
+
+  await importSeasons().catch((err) => {
+    console.error('Error importing', err);
+  });
+
+  await importEpisodes().catch((err) => {
+    console.error('Error importing', err);
+  });
+
+  await insertRateAndState().catch((err) => {
+    console.error('Error importing', err);
+  });
+}
+
+insertIntoDataBase();

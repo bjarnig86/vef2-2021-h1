@@ -49,7 +49,7 @@ async function validationCheckEpisode(req, res, next) {
   const validation = validationResult(req);
 
   if (!validation.isEmpty()) {
-    return res.json({ errors: validation.errors });
+    return res.status(401).json({ errors: validation.errors });
   }
 
   return next();

@@ -140,7 +140,7 @@ router.post(
       const result = await query(q, [status, userQuery.id]);
       return res.json(result);
     }
-    return res.status(401).json({ error: 'Already posted status' });
+    return res.status(400).json({ error: 'Already posted status' });
   },
 );
 
