@@ -205,9 +205,9 @@ async function importEpisodes() {
  */
 
 async function insertRateAndState() {
-  const q1 = 'INSERT INTO users_shows (show, "user", rating, status) VALUES (1, 2, 3, \'Er að horfa\')';
-  const q2 = 'INSERT INTO users_shows (show, "user", rating, status) VALUES (2, 2, 4, \'Langar að horfa\')';
-  const q3 = 'INSERT INTO users_shows (show, "user", rating, status) VALUES (1, 2, 3, \'Hef horft\')';
+  const q1 = `INSERT INTO users_shows (show, "user", rating, status) VALUES (1, 2, 3, 'Er að horfa')`
+  const q2 = `INSERT INTO users_shows (show, "user", rating, status) VALUES (2, 2, 4, 'Langar að horfa')`
+  const q3 = `INSERT INTO users_shows (show, "user", rating, status) VALUES (3, 2, 3, 'Hef horft')`
   query(q1);
   query(q2);
   query(q3);
