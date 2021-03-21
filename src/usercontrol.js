@@ -197,6 +197,12 @@ router.post('/users/login', async (req, res) => {
   const { username, password = '' } = req.body;
   const user = await findByUsername(username);
 
+  const validationMessage = validateUser({ username, password }, true);
+
+  if (validationMessage.length > 0) {
+    return res.status(400).json({ errors: validationMessage });
+  }
+
   if (!user) {
     return res.status(401).json({ error: 'No such user' });
   }
@@ -246,10 +252,10 @@ router.patch('/users/me', requireAuthentication, async (req, res) => {
     await query(
       `UPDATE users SET (email, password) = ('${email}', '${hashedPassword}') WHERE id = ${id}`
     );
-    res.json({ message: 'User has been updated' });
+    return res.json({ message: 'User has been updated' });
   } else if (email) {
     await query(`UPDATE users SET email = '${email}' WHERE id = ${id}`);
-    res.json({ message: 'User has been updated' });
+    return res.json({ message: 'User has been updated' });
   } else if (password) {
     const hashedPassword = await hashPassword(password);
     await query(
