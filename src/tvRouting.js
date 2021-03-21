@@ -6,7 +6,14 @@ import dotenv from 'dotenv';
 import xss from 'xss';
 import { body, param, validationResult } from 'express-validator';
 import { query } from './db.js';
-import { validationCheck } from './utils.js';
+import {
+  validationCheck,
+  conditionalUpdate,
+  isString,
+  isItEmpty,
+  lengthValidationError,
+  isNotEmptyString,
+} from './utils.js';
 import { withMulter, createImageURL } from './image.js';
 
 import {
@@ -24,6 +31,66 @@ const { BASE_URL: baseUrl } = process.env;
 export const router = express.Router();
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
+
+async function validateShow(
+  {
+    title,
+    tagline,
+    language,
+    network,
+    webpage,
+  } = {},
+  patching = false,
+) {
+  const validation = [];
+
+  if (!patching || title || isItEmpty(title)) {
+    if (!isNotEmptyString(title, { min: 1, max: 256 })) {
+      validation.push({
+        field: 'title',
+        error: lengthValidationError(title, 1, 256),
+      });
+    }
+  }
+
+  if (!patching || tagline || isItEmpty(tagline)) {
+    if (!isNotEmptyString(tagline, { min: 1, max: 256 })) {
+      validation.push({
+        field: 'tagline',
+        error: lengthValidationError(tagline, 1, 256),
+      });
+    }
+  }
+
+  if (!patching || language || isItEmpty(language)) {
+    if (!isNotEmptyString(language, { min: 1, max: 2 })) {
+      validation.push({
+        field: 'language',
+        error: lengthValidationError(language, 1, 2),
+      });
+    }
+  }
+
+  if (!patching || network || isItEmpty(network)) {
+    if (!isNotEmptyString(network, { min: 1, max: 256 })) {
+      validation.push({
+        field: 'network',
+        error: lengthValidationError(network, 1, 256),
+      });
+    }
+  }
+
+  if (!patching || webpage || isItEmpty(webpage)) {
+    if (!isNotEmptyString(webpage, { min: 1, max: 256 })) {
+      validation.push({
+        field: 'webpage',
+        error: lengthValidationError(webpage, 1, 256),
+      });
+    }
+  }
+
+  return validation;
+}
 
 function isEmpty(s) {
   if (typeof s === 'undefined') return true;
@@ -207,7 +274,9 @@ router.post(
     await withMulter(req, res, next);
     const {
       title,
+      // eslint-disable-next-line camelcase
       first_aired,
+      // eslint-disable-next-line camelcase
       in_production,
       tagline,
       description,
@@ -354,21 +423,22 @@ router.get('/tv/:id', isLoggedIn, async (req, res) => {
 
 /**
  * /tv/:id PATCH,
- * uppfærir sjónvarpsþátt, reit fyrir reit, aðeins ef notandi er stjórnandi
+ * uppfærir sjónvarpsþátt,
+ * reit fyrir reit,
+ * aðeins ef notandi er stjórnandi
  */
 router.patch(
   '/tv/:id',
   requireAdminAuthentication,
   validationMiddlewareId,
-  //validationMiddlewareTVShowPatch,
-  //xssSanitizationTVShow,
-  //catchErrors(validationCheckTVShow),
 
   async (req, res, next) => {
     await withMulter(req, res, next);
     const {
       title,
+      // eslint-disable-next-line camelcase
       first_aired,
+      // eslint-disable-next-line camelcase
       in_production,
       tagline,
       description,
@@ -378,53 +448,67 @@ router.patch(
     } = req.body;
 
     const { id } = req.params;
-    const val = { title, tagline, language, network, webpage };
 
-    const validations = await validationMiddlewareTVShow(val);
-    catchErrors(validationCheckTVShow);
+    // file er tómt ef engri var uploadað
+    const { file: { path, mimetype } = {} } = req;
+    const hasImage = Boolean(path && mimetype);
+
+    let [image, valid] = [];
+
+    if (hasImage) {
+      [image, valid] = await createImageURL(req, res, next);
+      if (valid.length > 0) {
+        return res.status(400).json({
+          errors: valid,
+        });
+      }
+    }
+
+    const product = {
+      title,
+      first_aired,
+      in_production,
+      tagline,
+      image,
+      description,
+      language,
+      network,
+      webpage,
+    };
+
+    const validations = await validateShow(product, true, id);
+
     if (validations.length > 0) {
       return res.status(400).json({
         errors: validations,
       });
     }
 
-    const [image, valid] = await createImageURL(req, res, next);
-    if (valid.length > 0) {
-      return res.status(400).json({
-        errors: valid,
-      });
-    }
-    const isset = (f) => typeof f === 'string' || typeof f === 'number';
-
-    const showData = [
-      isset(title) ? xss(title) : null,
-      isset(first_aired) ? xss(first_aired) : null,
-      isset(in_production) ? xss(in_production) : null,
-      isset(tagline) ? xss(tagline) : null,
-      image,
-      isset(description) ? xss(description) : null,
-      isset(language) ? xss(language) : null,
-      isset(network) ? xss(network) : null,
-      isset(webpage) ? xss(webpage) : null,
-      id,
+    const fields = [
+      isString(product.title) ? 'title' : null,
+      isString(product.first_aired) ? 'first_aired' : null,
+      isString(product.in_production) ? 'in_production' : null,
+      isString(product.tagline) ? 'tagline' : null,
+      isString(product.image) ? 'image' : null,
+      isString(product.description) ? 'description' : null,
+      isString(product.language) ? 'language' : null,
+      isString(product.network) ? 'network' : null,
+      isString(product.webpage) ? 'webpage' : null,
     ];
 
-    const q = `UPDATE shows
-      SET 
-        title = $1,
-        first_aired = $2,
-        in_production = $3,
-        tagline = $4,
-        image = $5,
-        description = $6,
-        language = $7,
-        network = $8,
-        webpage = $9
-      WHERE id = $10
-      RETURNING *`;
+    const values = [
+      isString(product.title) ? xss(product.title) : null,
+      isString(product.first_aired) ? xss(product.first_aired) : null,
+      isString(product.in_production) ? xss(product.in_production) : null,
+      isString(product.tagline) ? xss(product.tagline) : null,
+      isString(product.image) ? xss(product.image) : null,
+      isString(product.description) ? xss(product.description) : null,
+      isString(product.language) ? xss(product.language) : null,
+      isString(product.network) ? xss(product.network) : null,
+      isString(product.webpage) ? xss(product.webpage) : null,
+    ];
 
-    const result = await query(q, showData);
-
+    const result = await conditionalUpdate('shows', id, fields, values);
     return res.json(result.rows[0]);
   },
 );
@@ -437,7 +521,7 @@ router.patch(
 router.delete(
   '/tv/:id',
   requireAdminAuthentication,
-  validationMiddlewareId, //er ekki allt þetta validation/sanitization óþarfi í delete?
+  validationMiddlewareId,
   xssSanitizationId,
   catchErrors(validationCheck),
 
