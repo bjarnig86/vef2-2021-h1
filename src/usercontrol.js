@@ -48,11 +48,12 @@ async function validateUser({ username, password, name }, patch = false) {
 
   // can't patch username
   if (!patch) {
-    const m = 'Username is required, must be at least three letters and no more than 32 characters';
+    const m =
+      'Username is required, must be at least three letters and no more than 32 characters';
     if (
-      typeof username !== 'string'
-      || username.length < 3
-      || username.length > 32
+      typeof username !== 'string' ||
+      username.length < 3 ||
+      username.length > 32
     ) {
       validationMessages.push({ field: 'username', message: m });
     }
@@ -134,7 +135,8 @@ export function requireAuthentication(req, res, next) {
     }
 
     if (!user) {
-      const error = info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
+      const error =
+        info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
 
       return res.status(401).json({ error });
     }
@@ -152,7 +154,8 @@ export function requireAdminAuthentication(req, res, next) {
     }
 
     if (!user) {
-      const error = info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
+      const error =
+        info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
 
       return res.status(401).json({ error });
     }
@@ -173,15 +176,12 @@ export function isLoggedIn(req, res, next) {
   }
 
   return passport.authenticate('jwt', { session: false }, (err, user, info) => {
-    if (info) {
-      return false;
-    }
     if (err) {
       return false;
     }
 
     if (!user) {
-      return false;
+      return next();
     }
 
     // Látum notanda vera aðgengilegan í rest af middlewares
@@ -244,7 +244,7 @@ router.patch('/users/me', requireAuthentication, async (req, res) => {
   if (email !== undefined && password !== undefined) {
     const hashedPassword = await hashPassword(password);
     await query(
-      `UPDATE users SET (email, password) = ('${email}', '${hashedPassword}') WHERE id = ${id}`,
+      `UPDATE users SET (email, password) = ('${email}', '${hashedPassword}') WHERE id = ${id}`
     );
     res.json({ message: 'User has been updated' });
   } else if (email) {
@@ -253,7 +253,7 @@ router.patch('/users/me', requireAuthentication, async (req, res) => {
   } else if (password) {
     const hashedPassword = await hashPassword(password);
     await query(
-      `UPDATE users SET password = '${hashedPassword}' WHERE id = ${id}`,
+      `UPDATE users SET password = '${hashedPassword}' WHERE id = ${id}`
     );
     return res.json({ message: 'User has been updated' });
   }
@@ -319,5 +319,5 @@ router.post(
     }
 
     return res.status(401).json({ error: 'Could not register user ' });
-  },
+  }
 );
