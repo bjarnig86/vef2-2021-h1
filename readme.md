@@ -30,16 +30,16 @@ Sett upp á Heroku app sem [hopedihop1](https://hopedihop1.herokuapp.com/)
 * POST /login: `{"username": "bjarnicool", "password": "123"}`
 
 ## Dæmi um köll í vefþjónustu
-
 ### Sem óinnskráður notandi:
 **/tv GET**
 
 Kallað með GET á slóðina https://hopedihop1.herokuapp.com/tv
 Skilar síðum af sjónvarpsþáttum með grunnupplýsingum.
 
-* https://hopedihop1.herokuapp.com/tv/2/season
+**/tv/:id/season GET**
 
-GET - mun skila öllum seasons í sjónvarpsþætti með id 2
+Kallað með GET á slóðina https://hopedihop1.herokuapp.com/tv/2/season
+skilar öllum seasons í sjónvarpsþætti með id 2.
 
 ### Sem innskráður notandi:
 **Innskrá notanda**
