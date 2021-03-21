@@ -349,7 +349,7 @@ router.post(
     if (id) {
       const payload = { id };
       const tokenOptions = { expiresIn: tokenLifetime };
-      // eslint-disable-next-line no-unused-vars  ---  Einar!?
+      // eslint-disable-next-line no-unused-vars
       const token = jwt.sign(payload, jwtOptions.secretOrKey, tokenOptions);
       return res.json(data);
     }
