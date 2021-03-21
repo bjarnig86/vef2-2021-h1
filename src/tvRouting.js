@@ -166,7 +166,9 @@ async function validationMiddlewareTVShow({
     .withMessage('Webpage má að hámarki vera 255 stafir'),
   body('webpage').isURL().withMessage('Webpage þarf að vera á URL formi'),
   param('id').isNumeric().withMessage('id þarf að vera tala'),
-];*/ const validationMiddlewareId = [
+];*/
+
+const validationMiddlewareId = [
   param('id').isNumeric().withMessage('id þarf að vera tala'),
 ]; //held það megi taka þetta út
 
@@ -181,9 +183,9 @@ async function validationMiddlewareTVShow({
   body('network').customSanitizer((v) => xss(v)),
   body('webpage').customSanitizer((v) => xss(v)),
   body('id').customSanitizer((v) => xss(v)),
-];*/ const xssSanitizationId = [
-  param('id').customSanitizer((v) => xss(v)),
-];
+];*/
+
+const xssSanitizationId = [param('id').customSanitizer((v) => xss(v))];
 
 async function validationCheckTVShow(req, res, next) {
   const validation = validationResult(req);
