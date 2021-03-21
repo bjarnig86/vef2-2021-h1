@@ -2,7 +2,6 @@
 import { readFile } from 'fs/promises';
 import { query, end } from './db.js';
 
-
 const schemaFile = './sql/schema.sql';
 
 /**

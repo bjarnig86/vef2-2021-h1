@@ -1,5 +1,3 @@
-/* eslint-disable function-paren-newline */
-/* eslint-disable implicit-arrow-linebreak */
 import cloudinary from 'cloudinary';
 import multer from 'multer';
 import fs from 'fs';
@@ -51,9 +49,7 @@ export function withMulter(req, res, next) {
 async function deleteTemp() {
   try {
     const files = await readdir(directory);
-    const unlinkPromises = files.map((filename) =>
-      unlink(`${directory}/${filename}`),
-    );
+    const unlinkPromises = files.map((filename) => unlink(`${directory}/${filename}`));
     return Promise.all(unlinkPromises);
   } catch (err) {
     console.error(err);

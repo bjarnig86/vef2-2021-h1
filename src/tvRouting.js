@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import express from 'express';
 import dotenv from 'dotenv';
 import xss from 'xss';

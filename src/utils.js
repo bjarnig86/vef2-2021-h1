@@ -30,7 +30,6 @@ export const xssSanitizationParamSeason = [
 
 export async function validationCheck(req, res, next) {
   const validation = validationResult(req);
-  // console.log('validation :>> ', validation);
 
   if (!validation.isEmpty()) {
     return res.json({ errors: validation.errors });
@@ -49,7 +48,6 @@ export async function conditionalUpdate(table, id, fields, values) {
     );
 
   if (filteredFields.length === 0) {
-    console.log(`filteredFields --> ${filteredFields}`);
     return false;
   }
 

@@ -200,14 +200,14 @@ async function importEpisodes() {
   console.info('Finished Episodes');
 }
 
-importSeries().catch((err) => {
+await importSeries().catch((err) => {
   console.error('Error importing', err);
 });
 
-importSeasons().catch((err) => {
+await importSeasons().catch((err) => {
   console.error('Error importing', err);
 });
 
-importEpisodes().catch((err) => {
+await importEpisodes().catch((err) => {
   console.error('Error importing', err);
 });

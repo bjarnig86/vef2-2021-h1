@@ -1,5 +1,3 @@
-/* eslint-disable object-curly-newline */
-/* eslint-disable camelcase */
 import express from 'express';
 import xss from 'xss';
 import { body } from 'express-validator';
@@ -116,8 +114,9 @@ router.post(
   catchErrors(validationCheck),
 
   async (req, res) => {
-    // console.log(`tvRouting.js: /tv/:id/season post req.body --> ${req.body}`);
-    const { title, number, first_aired, description, poster } = req.body;
+    const {
+      title, number, first_aired, description, poster,
+    } = req.body;
 
     const seasonData = [
       title,
@@ -127,8 +126,6 @@ router.post(
       poster,
       req.params.id,
     ];
-
-    // console.log(`tvRouting.js: /tv/:id/season post seasonData --> ${seasonData}`);
 
     const q = `INSERT INTO seasons (
       title,

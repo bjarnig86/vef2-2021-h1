@@ -84,4 +84,5 @@ CREATE TABLE users_shows (
   rating INTEGER CHECK (rating between 0 and 5),
   status status
 );
+
 commit;
