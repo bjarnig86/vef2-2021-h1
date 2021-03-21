@@ -53,9 +53,9 @@ Skilar token
 
 --> Authorization
 
-    --> Velja `Bearer Token`
+  --> Velja `Bearer Token`
 
-    --> kópera `token` sem var skilað úr login
+  --> kópera `token` sem var skilað úr login
 
 --> http://<grunnsíða>/tv/4/rate
 
@@ -78,9 +78,9 @@ Fyrst:
 
 --> Authorization
 
-    --> Velja `Bearer Token`
+  --> Velja `Bearer Token`
 
-    --> kópera `token` sem var skilað úr login
+  --> kópera `token` sem var skilað úr login
 
 --> http://<grunnsíða>/tv
 
@@ -88,13 +88,14 @@ POST með form-data:
 
 KEY og VALUE þar sem skrá er sett inn með því að velja File undir KEY
 
-t.d.  Title - Why Women Kill
+t.d.  
+  Title - Why Women Kill
 
-      Language - en
+  Language - en
 
-      Image - mynd.jpg (velja File)
+  Image - mynd.jpg (velja File)
 
-      First_aired - 05-03-2020
+  First_aired - 05-03-2020
 
 Mun setja í gagnagrunninn ofangreindar upplýsingar, þar sem mynd.jpg er geymd á cloudinary og url á hana sett undir Image
 
