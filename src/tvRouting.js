@@ -304,8 +304,8 @@ router.get('/tv/:id', isLoggedIn, async (req, res) => {
 
   if (user) {
     const userShowRateState = await findByUserIdAndShowId(user.id, id);
-    const userRating = userShowRateState.rating;
-    const userStatus = userShowRateState.status;
+    const userRating = userShowRateState ? userShowRateState.rating : null;
+    const userStatus = userShowRateState ? userShowRateState.status : null;
 
     const result = {
       id: showData.id,
