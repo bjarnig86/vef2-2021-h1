@@ -395,9 +395,7 @@ router.patch(
     await withMulter(req, res, next);
     const {
       title,
-      // eslint-disable-next-line camelcase
       first_aired,
-      // eslint-disable-next-line camelcase
       in_production,
       tagline,
       description,
@@ -468,6 +466,10 @@ router.patch(
     ];
 
     const result = await conditionalUpdate('shows', id, fields, values);
+
+    if (result.rowCount === 0) {
+      return res.json('Show not found');
+    }
     return res.json(result.rows[0]);
   },
 );
