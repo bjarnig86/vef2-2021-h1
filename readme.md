@@ -1,7 +1,3 @@
-Til að búa til töflur og setja inn gögn:
-keyra fyrst: npm run setup
-og svo: npm run import
-
 
 # Vefforritun 2, 2021, Hópverkefni 1
 
@@ -37,42 +33,70 @@ Sett upp á Heroku app sem [hopedihop1](https://hopedihop1.herokuapp.com/)
 
 ### Sem óinnskráður notandi:
 --> http://<grunnsíða>/tv
+
 GET - mun skila síðum af sjónvarpsþáttum með grunnupplýsingum
+
 --> http://<grunnsíða>/tv/2/season
+
 GET - mun skila öllum seasons í sjónvarpsþætti með id 2
 
 ### Sem innskráður notandi:
 Fyrst:
+
 --> http://<grunnsíða>/users/login
+
 `{"username": "bjarnicool", "password": "123"}`
+
 Skilar token 
+
 Þar sem á að gera aðgerð:
+
 --> Authorization
+
     --> Velja `Bearer Token`
+
     --> kópera `token` sem var skilað úr login
+
 --> http://<grunnsíða>/tv/4/rate
+
 `{"rating": "5"}`
+
 POST - leyfir notanda að skrá einkunnina 5 fyrir sjónvarpsþátt með id 4
+
 PATCH - leyfir notanda að breyta einkunn fyrir sjónvarpsþátt með id 4
+
 DELETE - eyðir einkunn notanda fyrir sjónvarpsþátt með id 4
 
 ### Sem admin:
 Fyrst:
---> http://<grunnsíða>/users/login
-`{"username": "admin", "password": "123"}`
-Þar sem á að gera aðgerð:
---> Authorization
-    --> Velja `Bearer Token`
-    --> kópera `token` sem var skilað úr login
---> http://<grunnsíða>/tv
-POST með form-data:
-KEY og VALUE þar sem skrá er sett inn með því að velja File undir KEY
-t.d.  Title - Why Women Kill
-      Language - en
-      Image - mynd.jpg (velja File)
-      First_aired - 05-03-2020
-Mun setja í gagnagrunninn ofangreindar upplýsingar, þar sem mynd.jpg er geymd á cloudinary og url á hana sett undir Image
 
+--> http://<grunnsíða>/users/login
+
+`{"username": "admin", "password": "123"}`
+
+Þar sem á að gera aðgerð:
+
+--> Authorization
+
+    --> Velja `Bearer Token`
+
+    --> kópera `token` sem var skilað úr login
+
+--> http://<grunnsíða>/tv
+
+POST með form-data:
+
+KEY og VALUE þar sem skrá er sett inn með því að velja File undir KEY
+
+t.d.  Title - Why Women Kill
+
+      Language - en
+
+      Image - mynd.jpg (velja File)
+
+      First_aired - 05-03-2020
+
+Mun setja í gagnagrunninn ofangreindar upplýsingar, þar sem mynd.jpg er geymd á cloudinary og url á hana sett undir Image
 
 
 ## Hópur
