@@ -191,6 +191,7 @@ export function isLoggedIn(req, res, next) {
 }
 
 /**
+ * /users/login POST,
  * Skráir notanda inn.
  */
 router.post('/users/login', async (req, res) => {
@@ -218,7 +219,10 @@ router.post('/users/login', async (req, res) => {
 
   return res.status(401).json({ error: 'Invalid password' });
 });
-
+/**
+ * /users GET,
+ * skilar síðu af notendum, aðeins ef notandi sem framkvæmir er stjórnandi
+ */
 router.get('/users', requireAdminAuthentication, async (req, res) => {
   const allusers = await query('SELECT * FROM users');
   const users = [];
@@ -229,6 +233,13 @@ router.get('/users', requireAdminAuthentication, async (req, res) => {
   return res.json({ users });
 });
 
+/**
+ * /users/me GET,
+ * skilar upplýsingum um notanda
+ * sem á token,
+ * auðkenni og netfangi,
+ * aðeins ef notandi innskráður
+ */
 router.get('/users/me', requireAuthentication, async (req, res, next) => {
   if (req.method === 'PATCH') {
     return next();
@@ -266,6 +277,12 @@ router.patch('/users/me', requireAuthentication, async (req, res) => {
   return res.json({ error: 'no input' });
 });
 
+
+/**
+ * /users/:id GET,
+ * skilar notanda,
+ * aðeins ef notandi sem framkvæmir er stjórnandi
+ */
 router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
   const { params } = req;
   const getUser = await query(`SELECT * FROM users WHERE id = ${params.id}`);
@@ -278,6 +295,12 @@ router.get('/users/:id', requireAdminAuthentication, async (req, res) => {
   return res.json(user);
 });
 
+/**
+ * /users/:id PATCH,
+ * breytir hvort notandi sé stjórnandi eða ekki
+ * aðeins ef notandi sem framkvæmir er stjórnandi
+ * og er ekki að breyta sér sjálfum
+ */
 router.patch('/users/:id', requireAdminAuthentication, async (req, res) => {
   const { params } = req;
   const currentUser = req.user;
