@@ -1,14 +1,17 @@
 import cloudinary from 'cloudinary';
 import multer from 'multer';
-
-// const cloudinary = require('cloudinary').v2;
-// const xss = require('xss');
+import fs from 'fs';
+import util from 'util';
 
 const MIMETYPES = [
   'image/jpeg',
   'image/png',
   'image/gif',
 ];
+
+const readdir = util.promisify(fs.readdir);
+const unlink = util.promisify(fs.unlink);
+const directory = './temp';
 
 function validateImageMimetype(mimetype) {
   return MIMETYPES.indexOf(mimetype.toLowerCase()) >= 0;
@@ -98,6 +101,19 @@ export async function createImageURL(req, res, next) {
       return next(new Error('Cloudinary upload missing secure_url'));
     }
   }
-
+  deleteTemp();
   return [image, validations];
+}
+
+/**
+ * Hendir temp file-um úr temp directory
+ */
+async function deleteTemp() {
+  try {
+    const files = await readdir(directory);
+    const unlinkPromises = files.map(filename => unlink(`${directory}/${filename}`));
+    return Promise.all(unlinkPromises);
+  } catch(err) {
+    console.log(err);
+  }
 }
