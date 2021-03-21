@@ -85,8 +85,4 @@ CREATE TABLE users_shows (
   status status
 );
 
-INSERT INTO users_shows (show, "user", rating, status) VALUES (1, 2, 3, 'Er að horfa') RETURNING *;
-INSERT INTO users_shows (show, "user", rating, status) VALUES (2, 2, 4, 'Langar að horfa') RETURNING *;
-INSERT INTO users_shows (show, "user", rating, status) VALUES (3, 2, 5, 'Hef horft') RETURNING *;
-
 commit;
